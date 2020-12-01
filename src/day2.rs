@@ -1,3 +1,3 @@
 pub fn main() {
-	println!("Day 2");
+    println!("Day 2");
 }
