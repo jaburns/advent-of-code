@@ -58,6 +58,7 @@ def generate_main_rs(default_day):
     mods = []
     for file in glob.glob("src/day*.rs"):
         mods.append(file.replace('src/day','').replace('.rs',''))
+    mods.sort()
 
     code = RUST_MAIN_TEMPLATE
     code = code.replace('$MODS', '\n'.join(['mod day'+i+';' for i in mods]))
