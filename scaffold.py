@@ -2,6 +2,8 @@
 import sys
 import requests
 import glob
+import os.path
+from os import path
 
 RUST_DAY_TEMPLATE = """
 fn parse_line(line: &str) -> String {
@@ -50,8 +52,11 @@ def build_day_txt(day):
     with open('data/day'+str(day)+'.txt', 'w') as file:
         file.write(data.text.strip())
 
-def build_day_rs(day):
-    with open('src/day'+str(day)+'.rs', 'w') as file:
+def build_day_rs_if_not_exist(day):
+    src_path = 'src/day'+str(day)+'.rs'
+    if path.exists(src_path):
+        return
+    with open(src_path, 'w') as file:
         file.write(RUST_DAY_TEMPLATE.replace('$DAY', str(day)))
 
 def generate_main_rs(default_day):
@@ -76,7 +81,7 @@ def main():
 
     if day >= 1 and day <= 24:
         build_day_txt(day)
-        build_day_rs(day)
+        build_day_rs_if_not_exist(day)
         generate_main_rs(day)
     else:
         print("Usage:")
