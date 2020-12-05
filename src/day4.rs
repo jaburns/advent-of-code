@@ -38,14 +38,12 @@ fn validate_height(val: &str) -> bool {
             Ok(inches) => inches >= 59 && inches <= 76,
             Err(_) => false,
         }
-    }
-    else if val.ends_with("cm") {
+    } else if val.ends_with("cm") {
         match val.replace("cm", "").parse::<u32>() {
             Ok(cms) => cms >= 150 && cms <= 193,
             Err(_) => false,
         }
-    }
-    else {
+    } else {
         false
     }
 }
@@ -55,13 +53,13 @@ fn validate_hex_color(val: &str) -> bool {
 }
 
 fn validate_named_color(val: &str) -> bool {
-    val == "amb" ||
-    val == "blu" ||
-    val == "brn" ||
-    val == "gry" ||
-    val == "grn" ||
-    val == "hzl" ||
-    val == "oth"
+    val == "amb"
+        || val == "blu"
+        || val == "brn"
+        || val == "gry"
+        || val == "grn"
+        || val == "hzl"
+        || val == "oth"
 }
 
 fn validate_passport_id(val: &str) -> bool {
