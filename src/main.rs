@@ -3,8 +3,9 @@ mod day2;
 mod day3;
 mod day4;
 mod day5;
+mod day6;
 
-use day5 as default_day;
+use day6 as default_day;
 
 fn run_from_arg(arg: i32) {
     match arg {
@@ -13,6 +14,7 @@ fn run_from_arg(arg: i32) {
         3 => day3::main(),
         4 => day4::main(),
         5 => day5::main(),
+        6 => day6::main(),
         _ => {}
     }
 }
