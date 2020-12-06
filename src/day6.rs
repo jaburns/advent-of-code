@@ -4,12 +4,7 @@ pub fn main() {
     let groups = std::fs::read_to_string("data/day6.txt")
         .unwrap()
         .split("\n\n")
-        .map(|x| {
-            (
-                x.split("\n").count(),
-                String::from(x.replace("\n", "")),
-            )
-        })
+        .map(|x| (x.split("\n").count(), String::from(x.replace("\n", ""))))
         .collect::<Vec<(usize, String)>>();
 
     // Sum all of the unique characters in each group.
