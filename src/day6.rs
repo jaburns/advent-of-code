@@ -1,17 +1,6 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
-fn unique_chars_in_any_lines(lines: &[String]) -> usize {
-    let mut answers = HashSet::<char>::new();
-
-    for line in lines {
-        for ch in line.chars() {
-            answers.insert(ch);
-        }
-    }
-    answers.len()
-}
-
-fn chars_in_all_lines(lines: &[String]) -> usize {
+fn chars_in_all_lines(lines: &Vec<String>) -> usize {
     let mut answers = HashMap::<char, usize>::new();
 
     for line in lines {
@@ -30,17 +19,26 @@ fn chars_in_all_lines(lines: &[String]) -> usize {
 }
 
 pub fn main() {
-    let lines = std::fs::read_to_string("data/day6.txt")
+    let groups = std::fs::read_to_string("data/day6.txt")
         .unwrap()
-        .lines()
-        .map(|x| String::from(x.trim()))
+        .split("\n\n")
+        .map(|x| x.split("\n").map(String::from).collect::<Vec<_>>())
         .collect::<Vec<_>>();
 
-    let groups = lines.split(|x| x.trim().len() < 1).collect::<Vec<_>>();
+    let part1 = groups
+        .iter()
+        .map(|x| {
+            let mut chs = x.iter().map(|x| x.chars()).flatten().collect::<Vec<char>>();
+            chs.sort();
+            chs.dedup();
+            chs.len()
+        })
+        .sum::<usize>();
 
-    let part1: usize = groups.iter().map(|&x| unique_chars_in_any_lines(x)).sum();
-
-    let part2: usize = groups.iter().map(|&x| chars_in_all_lines(x)).sum();
+    let part2 = groups
+        .iter()
+        .map(chars_in_all_lines)
+        .sum::<usize>();
 
     println!("{} {}", part1, part2);
 }
