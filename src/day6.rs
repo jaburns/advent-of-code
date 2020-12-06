@@ -6,17 +6,17 @@ pub fn main() {
         .split("\n\n")
         .map(|x| {
             (
-                x.split("\n").collect::<Vec<_>>().len(),
+                x.split("\n").count(),
                 String::from(x.replace("\n", "")),
             )
         })
-        .collect::<Vec<_>>();
+        .collect::<Vec<(usize, String)>>();
 
     // Sum all of the unique characters in each group.
     let part1 = groups
         .iter()
         .map(|(_, string)| {
-            let mut x = string.chars().collect::<Vec<_>>();
+            let mut x = string.chars().collect::<Vec<char>>();
             x.sort();
             x.dedup();
             x.len()
