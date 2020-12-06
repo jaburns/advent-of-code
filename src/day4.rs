@@ -90,12 +90,14 @@ pub fn main() {
 
     let part1 = passports
         .iter()
-        .fold(0usize, |a, x| a + passport_has_required_fields(x) as usize);
+        .filter(|x| passport_has_required_fields(x))
+        .count();
 
     let part2 = passports
         .iter()
         .filter(|x| passport_has_required_fields(x))
-        .fold(0usize, |a, x| a + passport_fields_are_valid(x) as usize);
+        .filter(|x| passport_fields_are_valid(x))
+        .count();
 
     println!("{} {}", part1, part2);
 }
