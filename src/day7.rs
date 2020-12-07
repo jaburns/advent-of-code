@@ -1,5 +1,6 @@
 use regex::Regex;
 use std::collections::HashMap;
+use std::collections::HashSet;
 
 #[derive(Debug)]
 struct BagRule {
@@ -11,7 +12,7 @@ type BagRuleSet = HashMap<String, BagRule>;
 
 fn parse_bag_rules(lines: Vec<&str>) -> BagRuleSet {
     let mut ret = BagRuleSet::new();
-    let mut edges = Vec::<(String,(usize,String))>::new();
+    let mut edges = Vec::<(String, (usize, String))>::new();
 
     let bag_pattern = Regex::new("[0-9]+ [a-z]+ [a-z]+").unwrap();
 
@@ -21,10 +22,13 @@ fn parse_bag_rules(lines: Vec<&str>) -> BagRuleSet {
             .map(|x| x.trim())
             .collect::<Vec<_>>();
 
-        ret.insert(String::from(title_and_rest[0]), BagRule {
-            children: Vec::new(),
-            parents: Vec::new(),
-        });
+        ret.insert(
+            String::from(title_and_rest[0]),
+            BagRule {
+                children: Vec::new(),
+                parents: Vec::new(),
+            },
+        );
 
         bag_pattern
             .find_iter(title_and_rest[1])
@@ -41,7 +45,10 @@ fn parse_bag_rules(lines: Vec<&str>) -> BagRuleSet {
     }
 
     for (parent, (_, child_name)) in &edges {
-        ret.get_mut(child_name).unwrap().parents.push(parent.clone());
+        ret.get_mut(child_name)
+            .unwrap()
+            .parents
+            .push(parent.clone());
     }
 
     for (parent, child) in edges {
@@ -52,20 +59,26 @@ fn parse_bag_rules(lines: Vec<&str>) -> BagRuleSet {
 }
 
 fn count_total_parents(rules: &BagRuleSet, name: &str) -> usize {
-    let mut parents = Vec::<String>::new();
+    let mut visited = HashSet::<String>::new();
 
-    fn recurse(rules: &BagRuleSet, name: &str, parents: &mut Vec<String>) {
+    fn recurse(rules: &BagRuleSet, name: &str, visited: &mut HashSet<String>) {
         for parent in &rules[name].parents {
-            parents.push(parent.clone());
-            recurse(rules, parent, parents);
+            visited.insert(parent.clone());
+            recurse(rules, parent, visited);
         }
     }
+    recurse(rules, name, &mut visited);
 
-    recurse(rules, name, &mut parents);
+    visited.len()
+}
 
-    parents.sort();
-    parents.dedup();
-    parents.len()
+fn count_total_children(rules: &BagRuleSet, name: &str) -> usize {
+    rules[name]
+        .children
+        .iter()
+        .fold(0usize, |acc, (count, name)| {
+            acc + count + count * count_total_children(rules, name)
+        })
 }
 
 pub fn main() {
@@ -77,6 +90,7 @@ pub fn main() {
     );
 
     let part1 = count_total_parents(&bag_rules, "shiny gold");
+    let part2 = count_total_children(&bag_rules, "shiny gold");
 
-    println!("{:?}", part1);
+    println!("{} {}", part1, part2);
 }
