@@ -25,25 +25,23 @@ fn split_at_delta(delta: u32, nums: &[u32]) -> Vec<Vec<u32>> {
     result
 }
 
-fn count_permutations(max_delta: u32, nums: &Vec<u32>) -> u64 {
+fn count_permutations(max_delta: u32, nums: Vec<u32>) -> u64 {
     let mut perms = Vec::<Vec<u32>>::new();
-    perms.push(nums.clone());
 
-    fn recurse(max_delta: u32, nums: &Vec<u32>, perms: &mut Vec<Vec<u32>>) {
+    fn recurse(max_delta: u32, nums: Vec<u32>, perms: &mut Vec<Vec<u32>>) {
         for i in 1..(nums.len() - 1) {
             if nums[i + 1] - nums[i - 1] <= max_delta {
                 let mut sub = nums.clone();
                 sub.remove(i);
-                recurse(max_delta, &sub, perms);
-                perms.push(sub);
+                recurse(max_delta, sub, perms);
             }
         }
+        perms.push(nums);
     }
     recurse(max_delta, nums, &mut perms);
 
     perms.sort();
     perms.dedup();
-
     perms.len() as u64
 }
 
@@ -64,7 +62,7 @@ pub fn main() {
 
     let part2 = split_at_delta(3, &adapters)
         .iter()
-        .map(|x| count_permutations(3, x))
+        .map(|x| count_permutations(3, x.clone()))
         .product::<u64>();
 
     println!("{} {}", part1, part2);
