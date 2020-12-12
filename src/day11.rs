@@ -104,12 +104,17 @@ fn step_grid(
 
 fn count_seats_eventually_full(grid: &Vec<Vec<Cell>>, counter: CountFn, max_neighbors: u32) -> u32 {
     let mut grid = grid.clone();
+    let mut prev_grid = grid.clone();
 
     loop {
-        let prev_grid = grid.clone();
         step_grid(&prev_grid, &mut grid, counter, max_neighbors);
+
         if prev_grid == grid {
             break;
+        }
+
+        for y in 0..grid.len() {
+            prev_grid[y].copy_from_slice(&grid[y]);
         }
     }
 
@@ -123,7 +128,7 @@ fn count_seats_eventually_full(grid: &Vec<Vec<Cell>>, counter: CountFn, max_neig
 }
 
 pub fn main() {
-    let grid = std::fs::read_to_string("data/day11.smol.txt")
+    let grid = std::fs::read_to_string("data/day11.txt")
         .unwrap()
         .lines()
         .map(|x| x.chars().map(Cell::new).collect::<Vec<_>>())
