@@ -5,6 +5,7 @@ authors = ["Jeremy Burns <j@jaburns.net>"]
 edition = "2018"
 
 [dependencies]
+modinverse = "0.1.1"
 num = "0.3.1"
 num-derive = "0.3.3"
 num-traits = "0.2.14"
