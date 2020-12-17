@@ -18,6 +18,7 @@ pub fn main() {
 """
 
 RUST_MAIN_TEMPLATE = """$MODS
+mod utils;
 
 use day$DEFAULT as default_day;
 
