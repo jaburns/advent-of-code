@@ -20,11 +20,9 @@ def day18():
 
     with open('src/day18_gen.rs', 'w') as file:
         file.write('use crate::day18::{Val1,Val2};\n\n')
-        file.write('#[rustfmt::skip]\n')
         file.write('pub fn eval_data_part1() -> Val1 {\n')
         file.write('\n'.join(out_lines_1))
         file.write('\n}\n\n')
-        file.write('#[rustfmt::skip]\n')
         file.write('pub fn eval_data_part2() -> Val2 {\n')
         file.write('\n'.join(out_lines_2))
         file.write('\n}\n')
@@ -40,15 +38,29 @@ def translate_day19_rule(mode, rule):
         out = out + "sym('" + parts[1].replace('"', '') + "').discard()"
     elif '|' in parts[1]:
         subs = parts[1].split(' | ')
-        out = out + translate_inner(subs[0]) + ' | ' + translate_inner(subs[1])
+        out = out + ' | '.join([translate_inner(s) for s in subs])
     else:
         out = out + translate_inner(parts[1])
 
     return out + ' }'
 
 def day19():
-    with open('data/day19.txt', 'r') as file:
+    MAX_PATTERN_LEN = 64
+
+    with open('data/day19.test', 'r') as file:
         in_lines = [ l.strip() for l in file.readlines() ]
+
+    def update_rule_8():
+        vals = []
+        for i in range(1, MAX_PATTERN_LEN):
+            vals.append(' '.join(['42' for j in range(0, i)]))
+        return '8: ' + ' | '.join(vals)
+
+    def update_rule_11():
+        vals = []
+        for i in range(1, MAX_PATTERN_LEN // 2):
+            vals.append(' '.join(['42' for j in range(0, i)]) + ' ' + ' '.join(['31' for j in range(0, i)]))
+        return '11: ' + ' | '.join(vals)
 
     out_lines = []
     out_lines = []
@@ -57,9 +69,9 @@ def day19():
             break
         out_lines.append(translate_day19_rule('1', line))
         if line.startswith('8: '):
-            line = '8: 42 | 42 8'
+            line = update_rule_8()
         elif line.startswith('11: '):
-            line = '11: 42 31 | 42 11 31'
+            line = update_rule_11()
         out_lines.append(translate_day19_rule('2', line))
 
     with open('src/day19_gen.rs', 'w') as file:
