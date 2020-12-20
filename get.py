@@ -56,12 +56,12 @@ def build_day_rs_if_not_exist(day):
 def generate_main_rs(default_day):
     mods = []
     for file in glob.glob("src/day*.rs"):
-        mods.append(int(file.replace('src/day','').replace('.rs','')))
+        mods.append(file.replace('src/day','').replace('.rs',''))
     mods.sort()
 
     code = RUST_MAIN_TEMPLATE
-    code = code.replace('$MODS', '\n'.join(['mod day'+str(i)+';' for i in mods]))
-    code = code.replace('$RUNS', '\n'.join(['        '+str(i)+' => day'+str(i)+'::main(),' for i in mods]))
+    code = code.replace('$MODS', '\n'.join(['mod day'+i+';' for i in mods]))
+    code = code.replace('$RUNS', '\n'.join(['        '+i+' => day'+i+'::main(),' for i in mods if 'gen' not in i]))
     code = code.replace('$DEFAULT', str(default_day))
 
     with open('src/main.rs', 'w') as file:
