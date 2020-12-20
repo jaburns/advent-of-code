@@ -10,7 +10,6 @@ mod day17;
 mod day18;
 mod day18_gen;
 mod day19;
-mod day19_gen;
 mod day2;
 mod day3;
 mod day4;

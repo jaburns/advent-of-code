@@ -1,7 +1,7 @@
+use crate::day18_gen::{eval_data_part1, eval_data_part2};
 use std::ops::Add;
 use std::ops::Mul;
 use std::ops::Sub;
-use crate::day18_gen::{eval_data_part1, eval_data_part2};
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Val1(pub i64);
