@@ -17,6 +17,9 @@ enum RuleBody {
     BranchSub(Vec<RuleId>, Vec<RuleId>),
 }
 
+#[derive(Debug, Clone)]
+struct RuleSet(HashMap<RuleId, Rule>);
+
 impl Rule {
     pub fn parse(s: &str) -> Self {
         let id_rest = s.split(": ").collect::<Vec<_>>();
@@ -43,34 +46,42 @@ impl Rule {
             },
         }
     }
+}
 
-    fn create_map_by_id(rules: &[Rule]) -> HashMap<RuleId, Rule> {
-        let mut ret = HashMap::new();
+impl RuleSet {
+    pub fn parse(lines: &[String]) -> Self {
+        let mut map = HashMap::new();
+
+        let rules = lines
+            .iter()
+            .map(|x| Rule::parse(x.as_str()))
+            .collect::<Vec<_>>();
 
         for rule in rules {
-            ret.insert(rule.id, rule.clone());
+            map.insert(rule.id, rule.clone());
         }
 
-        ret
+        Self(map)
     }
 
-    fn get_regex(&self, rules_by_id: &HashMap<RuleId, Rule>) -> String {
-        match &self.body {
+    fn get_rule_regex(&self, rule_id: RuleId) -> String {
+        let rule = &self.0[&rule_id];
+        match &rule.body {
             RuleBody::Value(chr) => String::from(*chr),
             RuleBody::SingleSub(xs) => xs.iter()
-                .map(|x| rules_by_id[x].get_regex(rules_by_id))
+                .map(|x| self.get_rule_regex(*x))
                 .collect::<Vec<String>>()
                 .join(""),
             RuleBody::BranchSub(xs, ys) => {
                 let mut s = String::from("(");
                 s += xs.iter()
-                    .map(|x| rules_by_id[x].get_regex(rules_by_id))
+                    .map(|x| self.get_rule_regex(*x))
                     .collect::<Vec<String>>()
                     .join("")
                     .as_str();
                 s += "|";
                 s += ys.iter()
-                    .map(|x| rules_by_id[x].get_regex(rules_by_id))
+                    .map(|x| self.get_rule_regex(*x))
                     .collect::<Vec<String>>()
                     .join("")
                     .as_str();
@@ -78,6 +89,38 @@ impl Rule {
                 s
             },
         }
+    }
+
+    pub fn get_root_regex(&self) -> Regex {
+        let mut src = self.get_rule_regex(0);
+        src.insert(0, '^');
+        src += "$";
+        Regex::new(src.as_str()).unwrap()
+    }
+
+    pub fn get_patched_root_regex(&self) -> Regex {
+        let max_depth = 8;
+        let mut src = String::new();
+
+        src += "(";
+        src += self.get_rule_regex(42).as_str();
+        src += ")+";
+
+        src += "(";
+        for i in 1..max_depth {
+            for _ in 0..i {
+                src += self.get_rule_regex(42).as_str();
+            }
+            for _ in 0..i {
+                src += self.get_rule_regex(31).as_str();
+            }
+            src += if i == max_depth - 1 { ")" } else { "|" };
+        }
+
+        src.insert(0, '^');
+        src += "$";
+
+        Regex::new(src.as_str()).unwrap()
     }
 }
 
@@ -88,27 +131,18 @@ pub fn main() {
         .map(|x| x.lines().map(String::from).collect::<Vec<_>>())
         .collect::<Vec<_>>();
 
-    let rules = chunks[0]
-        .iter()
-        .map(|x| Rule::parse(x.as_str()))
-        .collect::<Vec<_>>();
+    let ruleset = RuleSet::parse(&chunks[0]);
 
     let patterns = chunks[1]
         .iter()
         .map(String::from)
         .collect::<Vec<_>>();
 
-    let rules_by_id = Rule::create_map_by_id(&rules);
-    let mut regex_src = rules_by_id[&0].get_regex(&rules_by_id);
-    regex_src.insert(0, '^');
-    regex_src += "$";
+    let regex = ruleset.get_root_regex();
+    let part1 = patterns.iter().filter(|x| regex.is_match(x)).count();
 
-    let regex = Regex::new(regex_src.as_str()).unwrap();
+    let regex = ruleset.get_patched_root_regex();
+    let part2 = patterns.iter().filter(|x| regex.is_match(x)).count();
 
-    let mut matches = 0u32;
-    for pattern in patterns {
-        matches += regex.is_match(pattern.as_str()) as u32;
-    }
-
-    println!("{:?}", matches);
+    println!("{} {}", part1, part2);
 }
