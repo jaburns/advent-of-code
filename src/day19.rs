@@ -68,26 +68,29 @@ impl RuleSet {
         let rule = &self.0[&rule_id];
         match &rule.body {
             RuleBody::Value(chr) => String::from(*chr),
-            RuleBody::SingleSub(xs) => xs.iter()
+            RuleBody::SingleSub(xs) => xs
+                .iter()
                 .map(|x| self.get_rule_regex(*x))
                 .collect::<Vec<String>>()
                 .join(""),
             RuleBody::BranchSub(xs, ys) => {
                 let mut s = String::from("(");
-                s += xs.iter()
+                s += xs
+                    .iter()
                     .map(|x| self.get_rule_regex(*x))
                     .collect::<Vec<String>>()
                     .join("")
                     .as_str();
                 s += "|";
-                s += ys.iter()
+                s += ys
+                    .iter()
                     .map(|x| self.get_rule_regex(*x))
                     .collect::<Vec<String>>()
                     .join("")
                     .as_str();
                 s += ")";
                 s
-            },
+            }
         }
     }
 
@@ -133,10 +136,7 @@ pub fn main() {
 
     let ruleset = RuleSet::parse(&chunks[0]);
 
-    let patterns = chunks[1]
-        .iter()
-        .map(String::from)
-        .collect::<Vec<_>>();
+    let patterns = chunks[1].iter().map(String::from).collect::<Vec<_>>();
 
     let regex = ruleset.get_root_regex();
     let part1 = patterns.iter().filter(|x| regex.is_match(x)).count();
