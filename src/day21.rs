@@ -1,10 +1,10 @@
-use std::collections::{HashSet, HashMap};
+use std::collections::{HashMap, HashSet};
 
 type Food = String;
 type Allergen = String;
 type DataLines = Vec<(HashSet<Food>, HashSet<Allergen>)>;
 
-#[derive(Debug,Clone)]
+#[derive(Debug, Clone)]
 struct InputData {
     lines: DataLines,
     all_foods: HashSet<Food>,
@@ -65,7 +65,11 @@ fn find_minimal_constraint_set(input: &InputData) -> HashMap<Allergen, HashSet<F
     ret
 }
 
-fn mapping_produces_contradiction(test_allergen: &Allergen, test_food: &Food, input: &InputData) -> bool {
+fn mapping_produces_contradiction(
+    test_allergen: &Allergen,
+    test_food: &Food,
+    input: &InputData,
+) -> bool {
     for l in &input.lines {
         if l.1.contains(test_allergen) && !l.0.contains(test_food) {
             return true;
@@ -83,7 +87,10 @@ fn solve_mapping(input: &InputData) -> HashMap<Allergen, Food> {
         reduced_guesses.insert(allergen.clone(), HashSet::new());
         for food in guess_foods {
             if !mapping_produces_contradiction(allergen, food, &input) {
-                reduced_guesses.get_mut(allergen).unwrap().insert(food.clone());
+                reduced_guesses
+                    .get_mut(allergen)
+                    .unwrap()
+                    .insert(food.clone());
             }
         }
     }
@@ -118,7 +125,7 @@ fn count_good_food_occurances(input: &InputData, bad_foods: &[Food]) -> u32 {
     for l in &input.lines {
         ret += l.0.iter().filter(|x| !bad_foods.contains(x)).count() as u32;
     }
-    
+
     ret
 }
 
@@ -126,12 +133,23 @@ pub fn main() {
     let input = load_data();
     let mappings = solve_mapping(&input);
 
-    let part1 = count_good_food_occurances(&input, mappings.values().map(|x| x.clone()).collect::<Vec<_>>().as_slice());
+    let part1 = count_good_food_occurances(
+        &input,
+        mappings
+            .values()
+            .map(|x| x.clone())
+            .collect::<Vec<_>>()
+            .as_slice(),
+    );
 
     let part2 = {
         let mut map_list = mappings.iter().collect::<Vec<_>>();
-        map_list.sort_by(|(a,_), (b,_)| a.partial_cmp(b).unwrap());
-        map_list.iter().map(|(_,x)| (*x).clone()).collect::<Vec<_>>().join(",")
+        map_list.sort_by(|(a, _), (b, _)| a.partial_cmp(b).unwrap());
+        map_list
+            .iter()
+            .map(|(_, x)| (*x).clone())
+            .collect::<Vec<_>>()
+            .join(",")
     };
 
     println!("{} {}", part1, part2);
