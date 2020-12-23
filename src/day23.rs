@@ -1,26 +1,22 @@
-use std::collections::VecDeque;
+use std::collections::{VecDeque};
 
-fn step(cups: &VecDeque<u8>) -> VecDeque<u8> {
-    let mut ret = cups.clone();
+fn step(cups: &mut VecDeque<u32>, max_val: u32) {
+    let cur = cups.pop_front().unwrap();
+    let hold0 = cups.pop_front().unwrap();
+    let hold1 = cups.pop_front().unwrap();
+    let hold2 = cups.pop_front().unwrap();
 
-    let cur = ret.pop_front().unwrap();
-    let hold0 = ret.pop_front().unwrap();
-    let hold1 = ret.pop_front().unwrap();
-    let hold2 = ret.pop_front().unwrap();
-
-    let mut dest = if cur == 1 { 9 } else { cur - 1 };
+    let mut dest = if cur == 1 { max_val } else { cur - 1 };
     while dest == hold0 || dest == hold1 || dest == hold2 {
-        dest = if dest == 1 { 9 } else { dest - 1 };
+        dest = if dest == 1 { max_val } else { dest - 1 };
     }
 
-    ret.push_back(cur);
+    cups.push_back(cur);
 
-    let insert_idx = ret.iter().position(|&x| x == dest).unwrap();
-    ret.insert(insert_idx + 1, hold2);
-    ret.insert(insert_idx + 1, hold1);
-    ret.insert(insert_idx + 1, hold0);
-
-    ret
+    let insert_idx = cups.iter().position(|&x| x == dest).unwrap();
+    cups.insert(insert_idx + 1, hold2);
+    cups.insert(insert_idx + 1, hold1);
+    cups.insert(insert_idx + 1, hold0);
 }
 
 pub fn main() {
@@ -28,24 +24,51 @@ pub fn main() {
         .unwrap()
         .trim()
         .chars()
-        .map(|x| x.to_string().parse::<u8>().unwrap())
+        .map(|x| x.to_string().parse::<u32>().unwrap())
         .collect::<VecDeque<_>>();
 
-    let mut step_cups = step(&cups);
-    for _ in 1..100 {
-        step_cups = step(&step_cups);
-    }
+    let part1 = {
+        let mut cups = cups.clone();
+        for _ in 0..100 {
+            step(&mut cups, 9);
+        }
 
-    while step_cups[0] != 1 {
-        step_cups.rotate_left(1);
-    }
-    step_cups.pop_front();
+        while cups[0] != 1 {
+            cups.rotate_left(1);
+        }
+        cups.pop_front();
 
-    let part1 = step_cups
-        .iter()
-        .map(|x| x.to_string())
-        .collect::<Vec<_>>()
-        .join("");
+        cups
+            .iter()
+            .map(|x| x.to_string())
+            .collect::<Vec<_>>()
+            .join("")
+    };
 
-    println!("{:?}", part1);
+    let part2: u64 = {
+        let mut cups = cups.clone();
+
+        for i in 10..=1_000_000 {
+            cups.push_back(i as u32);
+        }
+        for i in 0..10_000_000 {
+            if i % 1_000 == 0 {
+                println!("Percent done: {}", 100f32 * i as f32 / 10_000_000f32);
+            }
+            step(&mut cups, 1_000_000);
+        }
+
+        while cups[0] != 1 {
+            cups.rotate_left(1);
+        }
+
+        cups
+            .iter()
+            .skip(1)
+            .take(2)
+            .map(|&x| x as u64)
+            .product()
+    };
+
+    println!("{} {}", part1, part2);
 }
