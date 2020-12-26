@@ -38,7 +38,7 @@ fn run_game(cups: &Vec<usize>, size: usize, iterations: usize) -> Vec<usize> {
     let mut ret = Vec::new();
     cur_cup = next_cup[1];
     for _ in 0..8 {
-        ret.push( cur_cup);
+        ret.push(cur_cup);
         cur_cup = next_cup[cur_cup];
     }
     ret

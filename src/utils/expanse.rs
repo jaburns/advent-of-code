@@ -175,6 +175,20 @@ impl<T> Expanse2<T> {
         }
     }
 
+    pub fn x_range_plus(&self, radius: i32) -> Range<i32> {
+        (self.grid.index_range().min().unwrap() - radius)
+            ..(self.grid.index_range().max().unwrap() + radius + 1)
+    }
+
+    pub fn y_range_plus(&self, radius: i32) -> Range<i32> {
+        if self.grid.empty() {
+            0..0
+        } else {
+            (self.grid[0].index_range().min().unwrap() - radius)
+                ..(self.grid[0].index_range().max().unwrap() + radius + 1)
+        }
+    }
+
     pub fn render_to_string<F>(&self, empty: &str, f: F) -> String
     where
         F: Fn(&T) -> String,

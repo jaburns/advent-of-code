@@ -73,13 +73,13 @@ def main():
     except:
         day = 0
 
-    if day >= 1 and day <= 24:
+    if day >= 1 and day <= 25:
         build_day_txt(day)
         build_day_rs_if_not_exist(day)
         generate_main_rs(day)
     else:
         print("Usage:")
-        print("  ./scaffold.py [day]")
+        print("  ./get.py [day]")
 
 if __name__ == "__main__":
     main()
