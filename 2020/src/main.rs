@@ -8,7 +8,6 @@ mod day15;
 mod day16;
 mod day17;
 mod day18;
-mod day18_gen;
 mod day19;
 mod day2;
 mod day20;
@@ -26,7 +25,7 @@ mod day8;
 mod day9;
 mod utils;
 
-use day25 as default_day;
+use day1 as default_day;
 
 fn run_from_arg(arg: i32) {
     match arg {
