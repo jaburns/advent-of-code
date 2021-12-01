@@ -4,6 +4,7 @@ use day1 as default_day;
 
 fn run_from_arg(arg: i32) {
     match arg {
+        1 => day1::main(),
         _ => {}
     }
 }

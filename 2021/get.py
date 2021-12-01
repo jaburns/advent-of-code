@@ -18,7 +18,6 @@ pub fn main() {
 """
 
 RUST_MAIN_TEMPLATE = """$MODS
-mod utils;
 
 use day$DEFAULT as default_day;
 
@@ -42,7 +41,7 @@ fn main() {
 def build_day_txt(day):
     with open('session.txt', 'r') as file:
         cookies = {'session': file.read().strip()}
-    data = requests.get('https://adventofcode.com/2020/day/'+str(day)+'/input', cookies=cookies)
+    data = requests.get('https://adventofcode.com/2021/day/'+str(day)+'/input', cookies=cookies)
     with open('data/day'+str(day)+'.txt', 'w') as file:
         file.write(data.text.strip())
 
