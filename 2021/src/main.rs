@@ -1,10 +1,12 @@
 mod day1;
+mod day2;
 
-use day1 as default_day;
+use day2 as default_day;
 
 fn run_from_arg(arg: i32) {
     match arg {
         1 => day1::main(),
+        2 => day2::main(),
         _ => {}
     }
 }
