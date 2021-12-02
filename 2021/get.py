@@ -17,26 +17,26 @@ pub fn main() {
 }
 """
 
-RUST_MAIN_TEMPLATE = """$MODS
-
-use day$DEFAULT as default_day;
-
-fn run_from_arg(arg: i32) {
-    match arg {
-$RUNS
-        _ => {}
-    }
-}
-
-fn main() {
-    let args: Vec<String> = std::env::args().collect();
-    if args.len() > 1 {
-        run_from_arg(args[1].parse::<i32>().unwrap())
-    } else {
-        default_day::main();
-    }
-}
-"""
+# RUST_MAIN_TEMPLATE = """$MODS
+#
+# use day$DEFAULT as default_day;
+#
+# fn run_from_arg(arg: i32) {
+#     match arg {
+# $RUNS
+#         _ => {}
+#     }
+# }
+#
+# fn main() {
+#     let args: Vec<String> = std::env::args().collect();
+#     if args.len() > 1 {
+#         run_from_arg(args[1].parse::<i32>().unwrap())
+#     } else {
+#         default_day::main();
+#     }
+# }
+# """
 
 def build_day_txt(day):
     with open('session.txt', 'r') as file:
@@ -52,19 +52,19 @@ def build_day_rs_if_not_exist(day):
     with open(src_path, 'w') as file:
         file.write(RUST_DAY_TEMPLATE.replace('$DAY', str(day)))
 
-def generate_main_rs(default_day):
-    mods = []
-    for file in glob.glob("src/day*.rs"):
-        mods.append(file.replace('src/day','').replace('.rs',''))
-    mods.sort()
-
-    code = RUST_MAIN_TEMPLATE
-    code = code.replace('$MODS', '\n'.join(['mod day'+i+';' for i in mods]))
-    code = code.replace('$RUNS', '\n'.join(['        '+i+' => day'+i+'::main(),' for i in mods if 'gen' not in i]))
-    code = code.replace('$DEFAULT', str(default_day))
-
-    with open('src/main.rs', 'w') as file:
-        file.write(code)
+# def generate_main_rs(default_day):
+#     mods = []
+#     for file in glob.glob("src/day*.rs"):
+#         mods.append(file.replace('src/day','').replace('.rs',''))
+#     mods.sort()
+#
+#     code = RUST_MAIN_TEMPLATE
+#     code = code.replace('$MODS', '\n'.join(['mod day'+i+';' for i in mods]))
+#     code = code.replace('$RUNS', '\n'.join(['        '+i+' => day'+i+'::main(),' for i in mods if 'gen' not in i]))
+#     code = code.replace('$DEFAULT', str(default_day))
+#
+#     with open('src/main.rs', 'w') as file:
+#         file.write(code)
 
 def main():
     try:
@@ -75,7 +75,7 @@ def main():
     if day >= 1 and day <= 25:
         build_day_txt(day)
         build_day_rs_if_not_exist(day)
-        generate_main_rs(day)
+#        generate_main_rs(day)
     else:
         print("Usage:")
         print("  ./get.py [day]")

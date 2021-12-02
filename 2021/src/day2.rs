@@ -1,5 +1,4 @@
-pub fn main() {
-    let raw_input = std::fs::read_to_string("data/day2.txt").unwrap();
+pub fn main(raw_input: &str) -> (i64, i64) {
     let commands_iter = raw_input.lines().map(|x| x.split_once(' ').unwrap());
 
     let part1 = {
@@ -40,5 +39,5 @@ pub fn main() {
         x * y
     };
 
-    println!("{} {}", part1, part2);
+    (part1 as i64, part2 as i64)
 }
