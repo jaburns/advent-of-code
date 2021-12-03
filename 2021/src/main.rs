@@ -18,7 +18,13 @@ static DAY_FUNCS: [(PartFn, PartFn); NUM_DAYS] = [
 ];
 
 fn main() {
-    let args: Vec<String> = std::env::args().collect();
+    let data_ext = if std::env::args().any(|x| x == "--test") {
+        "test"
+    } else {
+        "txt"
+    };
+
+    let args: Vec<String> = std::env::args().filter(|x| x != "--test").collect();
 
     let day = if args.len() > 1 {
         args[1].parse::<usize>().unwrap()
@@ -26,8 +32,8 @@ fn main() {
         NUM_DAYS
     };
 
-    let data = std::fs::read_to_string(&format!("data/day{}.txt", day)).unwrap();
-    let data_lines: Vec<&str> = data.lines().collect();
+    let data = std::fs::read_to_string(&format!("data/day{}.{}", day, data_ext)).unwrap();
+    let data_lines: Vec<&str> = data.trim().lines().map(|x| x.trim()).collect();
 
     let mut out_str = String::with_capacity(256);
 
