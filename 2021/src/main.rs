@@ -1,14 +1,20 @@
+use std::time::Instant;
+
 mod day1;
 mod day2;
 mod day3;
 
 #[global_allocator]
-static GLOBAL: &stats_alloc::StatsAlloc<std::alloc::System> = &stats_alloc::INSTRUMENTED_SYSTEM;
+pub static GLOBAL: &stats_alloc::StatsAlloc<std::alloc::System> = &stats_alloc::INSTRUMENTED_SYSTEM;
 
 const NUM_DAYS: usize = 3;
 
 #[allow(clippy::type_complexity)]
-static DAY_FUNCS: [fn(&str) -> (i64, i64); NUM_DAYS] = [day1::main, day2::main, day3::main];
+static DAY_FUNCS: [(fn(&str, &mut String), fn(&str, &mut String)); NUM_DAYS] = [
+    (day1::part1, day1::part2),
+    (day2::part1, day2::part2),
+    (day3::part1, day3::part2),
+];
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
@@ -21,9 +27,33 @@ fn main() {
 
     let data = std::fs::read_to_string(&format!("data/day{}.txt", day)).unwrap();
 
+    let mut out_str = String::with_capacity(256);
+
+    println!();
+    println!("Day {} - Part One", day);
+
     let reg = stats_alloc::Region::new(GLOBAL);
+    let start_time = Instant::now();
+    DAY_FUNCS[day - 1].0(&data, &mut out_str);
+    let delta_time = Instant::now() - start_time;
+    let stats = reg.change();
 
-    let (a, b) = DAY_FUNCS[day - 1](&data);
+    println!("Solution: {}", out_str);
+    println!("Time (us): {}", delta_time.as_micros());
+    println!("{:#?}", stats);
 
-    println!("\n  {}  {}\n\n{:#?}\n", a, b, reg.change());
+    out_str.clear();
+
+    println!();
+    println!("Day {} - Part Two", day);
+
+    let reg = stats_alloc::Region::new(GLOBAL);
+    let start_time = Instant::now();
+    DAY_FUNCS[day - 1].1(&data, &mut out_str);
+    let delta_time = Instant::now() - start_time;
+    let stats = reg.change();
+
+    println!("Solution: {}", out_str);
+    println!("Time (us): {}", delta_time.as_micros());
+    println!("{:#?}", stats);
 }

@@ -1,15 +1,7 @@
-use std::str::Lines;
+use std::fmt::Write;
 
-pub fn main(raw_input: &str) -> (i64, i64) {
+pub fn part1(raw_input: &str, out: &mut String) {
     let lines = raw_input.lines();
-
-    let part1 = calc_power_consumption(lines.clone()) as i64;
-    let part2 = calc_life_support(lines) as i64;
-
-    (part1, part2)
-}
-
-fn calc_power_consumption(lines: Lines) -> u64 {
     let bit_count = lines.clone().next().unwrap().len();
     let line_count = lines.clone().count();
 
@@ -29,10 +21,19 @@ fn calc_power_consumption(lines: Lines) -> u64 {
 
     let all_ones = 2u64.pow(bit_count as u32) - 1;
 
-    gamma * (!gamma & all_ones)
+    let result = gamma * (!gamma & all_ones);
+
+    write!(out, "{}", result).unwrap();
 }
 
-fn calc_life_support(lines: Lines) -> u64 {
+pub fn part2(raw_input: &str, out: &mut String) {
+    let lines = raw_input.lines();
+    let num_lines = lines.clone().count();
+    let mut lines_vec: Vec<&str> = vec![""; num_lines];
+    for (i, line) in lines.enumerate() {
+        lines_vec[i] = line;
+    }
+
     fn check(mut lines: Vec<&str>, keep_ones_if: impl Fn(u64, u64) -> bool) -> u64 {
         let mut idx: usize = 0;
 
@@ -64,10 +65,10 @@ fn calc_life_support(lines: Lines) -> u64 {
         }
     }
 
-    let lines: Vec<&str> = lines.collect();
+    let o2 = check(lines_vec.clone(), |ones, zeroes| ones >= zeroes);
+    let co2 = check(lines_vec, |ones, zeroes| ones < zeroes);
 
-    let o2 = check(lines.clone(), |ones, zeroes| ones >= zeroes);
-    let co2 = check(lines, |ones, zeroes| ones < zeroes);
+    let result = o2 * co2;
 
-    o2 * co2
+    write!(out, "{}", result).unwrap();
 }
