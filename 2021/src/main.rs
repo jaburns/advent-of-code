@@ -1,13 +1,14 @@
 mod day1;
 mod day2;
+mod day3;
 
 #[global_allocator]
 static GLOBAL: &stats_alloc::StatsAlloc<std::alloc::System> = &stats_alloc::INSTRUMENTED_SYSTEM;
 
-const NUM_DAYS: usize = 2;
+const NUM_DAYS: usize = 3;
 
 #[allow(clippy::type_complexity)]
-static DAY_FUNCS: [fn(&str) -> (i64, i64); NUM_DAYS] = [day1::main, day2::main];
+static DAY_FUNCS: [fn(&str) -> (i64, i64); NUM_DAYS] = [day1::main, day2::main, day3::main];
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
