@@ -1,7 +1,7 @@
 use std::fmt::Write;
 
-pub fn part1(raw_input: &str, out: &mut String) {
-    let commands_iter = raw_input.lines().map(|x| x.split_once(' ').unwrap());
+pub fn part1(lines: &[&str], out: &mut String) {
+    let commands_iter = lines.iter().map(|x| x.split_once(' ').unwrap());
 
     let mut x = 0i32;
     let mut y = 0i32;
@@ -20,8 +20,8 @@ pub fn part1(raw_input: &str, out: &mut String) {
     write!(out, "{}", result).unwrap();
 }
 
-pub fn part2(raw_input: &str, out: &mut String) {
-    let commands_iter = raw_input.lines().map(|x| x.split_once(' ').unwrap());
+pub fn part2(lines: &[&str], out: &mut String) {
+    let commands_iter = lines.iter().map(|x| x.split_once(' ').unwrap());
 
     let mut x = 0i32;
     let mut y = 0i32;

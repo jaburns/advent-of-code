@@ -1,13 +1,12 @@
 use std::fmt::Write;
 
-pub fn part1(raw_input: &str, out: &mut String) {
-    let lines = raw_input.lines();
-    let bit_count = lines.clone().next().unwrap().len();
-    let line_count = lines.clone().count();
+pub fn part1(lines: &[&str], out: &mut String) {
+    let bit_count = lines.iter().next().unwrap().len();
+    let line_count = lines.len();
 
     let mut counts = vec![0u64; bit_count];
 
-    for line in lines.clone() {
+    for line in lines {
         for (i, b) in line.chars().enumerate() {
             counts[bit_count - 1 - i] += (b == '1') as u64;
         }
@@ -26,15 +25,8 @@ pub fn part1(raw_input: &str, out: &mut String) {
     write!(out, "{}", result).unwrap();
 }
 
-pub fn part2(raw_input: &str, out: &mut String) {
-    let lines = raw_input.lines();
-    let num_lines = lines.clone().count();
-    let mut lines_vec: Vec<&str> = vec![""; num_lines];
-    for (i, line) in lines.enumerate() {
-        lines_vec[i] = line;
-    }
-
-    fn check(mut lines: Vec<&str>, keep_ones_if: impl Fn(u64, u64) -> bool) -> u64 {
+pub fn part2(lines: &[&str], out: &mut String) {
+    fn check(lines: &mut Vec<&str>, keep_ones_if: impl Fn(u64, u64) -> bool) -> u64 {
         let mut idx: usize = 0;
 
         loop {
@@ -65,8 +57,14 @@ pub fn part2(raw_input: &str, out: &mut String) {
         }
     }
 
-    let o2 = check(lines_vec.clone(), |ones, zeroes| ones >= zeroes);
-    let co2 = check(lines_vec, |ones, zeroes| ones < zeroes);
+    let mut lines_vec = vec![""; lines.len()];
+
+    lines_vec.clone_from_slice(lines);
+    let o2 = check(&mut lines_vec, |ones, zeroes| ones >= zeroes);
+
+    lines_vec.resize(lines.len(), "");
+    lines_vec.clone_from_slice(lines);
+    let co2 = check(&mut lines_vec, |ones, zeroes| ones < zeroes);
 
     let result = o2 * co2;
 
