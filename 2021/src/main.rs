@@ -49,7 +49,7 @@ fn main() {
     let stats = reg.change();
 
     println!("Solution: {}", out_str);
-    println!("Time (us): {}", delta_time.as_micros());
+    println!("Time (μs): {}", delta_time.as_micros());
     println!("{:#?}", stats);
 
     out_str.clear();
@@ -64,6 +64,6 @@ fn main() {
     let stats = reg.change();
 
     println!("Solution: {}", out_str);
-    println!("Time (us): {}", delta_time.as_micros());
+    println!("Time (μs): {}", delta_time.as_micros());
     println!("{:#?}", stats);
 }
