@@ -45,7 +45,7 @@ fn main() {
     let reg = stats_alloc::Region::new(GLOBAL);
     let start_time = Instant::now();
     DAY_FUNCS[day - 1].0(&data_lines, &mut out_str);
-    let delta_time = Instant::now() - start_time;
+    let delta_time = start_time.elapsed();
     let stats = reg.change();
 
     println!("Solution: {}", out_str);
@@ -60,7 +60,7 @@ fn main() {
     let reg = stats_alloc::Region::new(GLOBAL);
     let start_time = Instant::now();
     DAY_FUNCS[day - 1].1(&data_lines, &mut out_str);
-    let delta_time = Instant::now() - start_time;
+    let delta_time = start_time.elapsed();
     let stats = reg.change();
 
     println!("Solution: {}", out_str);
