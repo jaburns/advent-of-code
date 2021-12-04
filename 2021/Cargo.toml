@@ -11,3 +11,6 @@ num-derive = "0.3.3"
 num-traits = "0.2.14"
 regex = "1.4.2"
 stats_alloc = "0.1.8"
+
+[profile.release]
+debug = true

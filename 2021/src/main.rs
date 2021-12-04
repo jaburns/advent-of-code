@@ -3,8 +3,9 @@ use std::time::Instant;
 mod day1;
 mod day2;
 mod day3;
+mod day4;
 
-const NUM_DAYS: usize = 3;
+const NUM_DAYS: usize = 4;
 
 #[global_allocator]
 pub static GLOBAL: &stats_alloc::StatsAlloc<std::alloc::System> = &stats_alloc::INSTRUMENTED_SYSTEM;
@@ -15,6 +16,7 @@ static DAY_FUNCS: [(PartFn, PartFn); NUM_DAYS] = [
     (day1::part1, day1::part2),
     (day2::part1, day2::part2),
     (day3::part1, day3::part2),
+    (day4::part1, day4::part2),
 ];
 
 fn main() {
