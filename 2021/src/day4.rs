@@ -83,13 +83,16 @@ mod board {
 
 use board::Board;
 
+const BOARD_SIZE: usize = 5;
+
 fn parse_inputs_and_run_game(
     lines: &[&str],
-    run_stamp: impl Fn(&mut Vec<Board<5, 5>>, u32) -> Option<u32>,
+    run_stamp: impl Fn(&mut Vec<Board<BOARD_SIZE, BOARD_SIZE>>, u32) -> Option<u32>,
 ) -> u32 {
-    let mut boards: Vec<Board<5, 5>> = Vec::with_capacity((lines.len() - 1) / 6);
-    for i in (2..lines.len()).step_by(6) {
-        boards.push(Board::new(&lines[i..(i + 5)]));
+    let mut boards = Vec::with_capacity((lines.len() - 1) / (BOARD_SIZE + 1));
+
+    for i in (2..lines.len()).step_by(BOARD_SIZE + 1) {
+        boards.push(Board::new(&lines[i..(i + BOARD_SIZE)]));
     }
 
     let feed = lines[0]
