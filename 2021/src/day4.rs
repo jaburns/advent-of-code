@@ -1,73 +1,87 @@
 use std::fmt::Write;
 
-#[derive(Debug)]
-struct Board<const W: usize, const H: usize> {
-    last_stamp: u32,
-    squares: [[(u32, bool); H]; W],
-}
-
-impl<const W: usize, const H: usize> Board<W, H> {
-    fn new(lines: &[&str]) -> Self {
-        let mut ret = Self {
-            last_stamp: 0,
-            squares: [[(0, false); H]; W],
-        };
-
-        for (y, line) in lines.iter().enumerate() {
-            for (x, v) in line.split_whitespace().enumerate() {
-                ret.squares[x][y].0 = v.parse().unwrap();
-            }
-        }
-
-        ret
+mod board {
+    #[derive(Debug)]
+    pub struct Board<const W: usize, const H: usize> {
+        last_stamp: u32,
+        squares: [[(u32, bool); H]; W],
+        lookup: [Option<(u8, u8)>; 100],
+        bingo: bool,
     }
 
-    fn stamp(&mut self, num: u32) {
-        self.last_stamp = num;
-        for x in 0..W {
-            for y in 0..H {
-                if self.squares[x][y].0 == num {
-                    self.squares[x][y].1 = true;
+    impl<const W: usize, const H: usize> Board<W, H> {
+        pub fn new(lines: &[&str]) -> Self {
+            let mut ret = Self {
+                last_stamp: 0,
+                squares: [[(0, false); H]; W],
+                lookup: [None; 100],
+                bingo: false,
+            };
+
+            for (y, line) in lines.iter().enumerate() {
+                for (x, v) in line.split_whitespace().enumerate() {
+                    let val = v.parse().unwrap();
+                    ret.squares[x][y].0 = val;
+                    ret.lookup[val as usize] = Some((x as u8, y as u8));
+                }
+            }
+
+            ret
+        }
+
+        pub fn stamp(&mut self, num: u32) {
+            if let Some((x, y)) = self.lookup[num as usize] {
+                self.last_stamp = num;
+                self.squares[x as usize][y as usize].1 = true;
+
+                // Check the stamp point row for a bingo
+                let mut failed = false;
+                for ix in 0..W {
+                    if !self.squares[ix][y as usize].1 {
+                        failed = true;
+                        break;
+                    }
+                }
+                if !failed {
+                    self.bingo = true;
                     return;
                 }
-            }
-        }
-    }
 
-    fn has_bingo(&self) -> bool {
-        'outer0: for x in 0..W {
-            for y in 0..H {
-                if !self.squares[x][y].1 {
-                    continue 'outer0;
+                // Check the stamp point column for a bingo
+                let mut failed = false;
+                for iy in 0..H {
+                    if !self.squares[x as usize][iy].1 {
+                        failed = true;
+                        break;
+                    }
+                }
+                if !failed {
+                    self.bingo = true;
                 }
             }
-            return true;
         }
-        'outer1: for y in 0..H {
+
+        pub fn has_bingo(&self) -> bool {
+            self.bingo
+        }
+
+        pub fn calc_score(&self) -> u32 {
+            let mut sum = 0;
+
             for x in 0..W {
-                if !self.squares[x][y].1 {
-                    continue 'outer1;
+                for y in 0..H {
+                    if !self.squares[x][y].1 {
+                        sum += self.squares[x][y].0;
+                    }
                 }
             }
-            return true;
+
+            sum * self.last_stamp
         }
-        false
-    }
-
-    fn calc_score(&self) -> u32 {
-        let mut sum = 0;
-
-        for x in 0..W {
-            for y in 0..H {
-                if !self.squares[x][y].1 {
-                    sum += self.squares[x][y].0;
-                }
-            }
-        }
-
-        sum * self.last_stamp
     }
 }
+
+use board::Board;
 
 fn parse_inputs_and_run_game(
     lines: &[&str],
@@ -102,7 +116,7 @@ pub fn part1(lines: &[&str], out: &mut String) {
         None
     });
 
-    write!(out, "{:#?}", result).unwrap();
+    write!(out, "{}", result).unwrap();
 }
 
 pub fn part2(lines: &[&str], out: &mut String) {
