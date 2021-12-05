@@ -1,6 +1,5 @@
 #![allow(clippy::needless_range_loop)]
 use std::fmt::Write;
-use std::sync::atomic::AtomicBool;
 
 #[derive(Debug)]
 struct VentLine {
@@ -36,7 +35,7 @@ const GRID_SIZE: usize = 1000;
 type Grid = [[u8; GRID_SIZE]; GRID_SIZE];
 
 fn draw_line_to_grid(grid: &mut Grid, line: &VentLine, diagonals: bool) -> u32 {
-    if !diagonals && line.a.0 != line.b.0 && line.a.1 == line.b.1 {
+    if !diagonals && line.a.0 != line.b.0 && line.a.1 != line.b.1 {
         return 0;
     }
 
@@ -61,22 +60,12 @@ fn draw_line_to_grid(grid: &mut Grid, line: &VentLine, diagonals: bool) -> u32 {
 }
 
 fn run(lines: &[&str], out: &mut String, diagonals: bool) {
-    static LOCK: AtomicBool = AtomicBool::new(false);
-
-    if LOCK.swap(true, std::sync::atomic::Ordering::Relaxed) {
-        panic!("Musn't call day5 solutions from multiple threads");
-    }
-
-    static mut STATIC_GRID: Grid = [[0; GRID_SIZE]; GRID_SIZE];
-    let grid: &mut Grid = unsafe { &mut STATIC_GRID };
-
+    let mut grid: Grid = [[0; GRID_SIZE]; GRID_SIZE];
     let mut count = 0u32;
 
     for line in lines {
-        count += draw_line_to_grid(grid, &VentLine::parse(line), diagonals);
+        count += draw_line_to_grid(&mut grid, &VentLine::parse(line), diagonals);
     }
-
-    LOCK.store(false, std::sync::atomic::Ordering::Relaxed);
 
     write!(out, "{}", count).unwrap();
 }
