@@ -1,5 +1,6 @@
 #![allow(clippy::needless_range_loop)]
 use std::fmt::Write;
+use std::sync::atomic::AtomicBool;
 
 #[derive(Debug)]
 struct VentLine {
@@ -32,53 +33,50 @@ impl VentLine {
 
 const GRID_SIZE: usize = 1000;
 
-type Grid = [[u16; GRID_SIZE]; GRID_SIZE];
+type Grid = [[u8; GRID_SIZE]; GRID_SIZE];
 
 fn draw_line_to_grid(grid: &mut Grid, line: &VentLine, diagonals: bool) -> u32 {
+    if !diagonals && line.a.0 != line.b.0 && line.a.1 == line.b.1 {
+        return 0;
+    }
+
+    let dx = (line.b.0 as i32) - (line.a.0 as i32);
+    let dy = (line.b.1 as i32) - (line.a.1 as i32);
+    let dx_step = dx.signum();
+    let dy_step = dy.signum();
+
+    let (mut ix, mut iy) = (line.a.0 as i32, line.a.1 as i32);
+
     let mut count = 0;
 
-    if line.a.0 == line.b.0 {
-        let min = line.a.1.min(line.b.1);
-        let max = line.a.1.max(line.b.1);
-        for i in min..=max {
-            grid[line.a.0][i] += 1;
-            count += (grid[line.a.0][i] == 2) as u32;
-        }
-    } else if line.a.1 == line.b.1 {
-        let min = line.a.0.min(line.b.0);
-        let max = line.a.0.max(line.b.0);
-        for i in min..=max {
-            grid[i][line.a.1] += 1;
-            count += (grid[i][line.a.1] == 2) as u32;
-        }
-    } else if diagonals {
-        let dx = ((line.b.0 as i32) - (line.a.0 as i32)).signum();
-        let dy = ((line.b.1 as i32) - (line.a.1 as i32)).signum();
-        let (mut ix, mut iy) = (line.a.0 as i32, line.a.1 as i32);
+    for _ in 0..=dx.abs().max(dy.abs()) {
+        grid[ix as usize][iy as usize] += 1;
+        count += (grid[ix as usize][iy as usize] == 2) as u32;
 
-        loop {
-            grid[ix as usize][iy as usize] += 1;
-            count += (grid[ix as usize][iy as usize] == 2) as u32;
-
-            ix += dx;
-            iy += dy;
-
-            if dx < 0 && ix < line.b.0 as i32 || dx > 0 && ix > line.b.0 as i32 {
-                break;
-            }
-        }
+        ix += dx_step;
+        iy += dy_step;
     }
 
     count
 }
 
 fn run(lines: &[&str], out: &mut String, diagonals: bool) {
-    let mut grid: Grid = [[0u16; GRID_SIZE]; GRID_SIZE];
+    static LOCK: AtomicBool = AtomicBool::new(false);
+
+    if LOCK.swap(true, std::sync::atomic::Ordering::Relaxed) {
+        panic!("Musn't call day5 solutions from multiple threads");
+    }
+
+    static mut STATIC_GRID: Grid = [[0; GRID_SIZE]; GRID_SIZE];
+    let grid: &mut Grid = unsafe { &mut STATIC_GRID };
+
     let mut count = 0u32;
 
     for line in lines {
-        count += draw_line_to_grid(&mut grid, &VentLine::parse(line), diagonals);
+        count += draw_line_to_grid(grid, &VentLine::parse(line), diagonals);
     }
+
+    LOCK.store(false, std::sync::atomic::Ordering::Relaxed);
 
     write!(out, "{}", count).unwrap();
 }
