@@ -1,9 +1,5 @@
 use std::fmt::Write;
 
-// Solutions
-// 350917
-// 1592918715629
-
 fn run_fish_sim(input: &str, days: u32) -> u64 {
     let mut fishes_by_day = [0_u64; 9];
 
