@@ -7,8 +7,9 @@ mod day4;
 mod day5;
 mod day6;
 mod day7;
+mod day8;
 
-const NUM_DAYS: usize = 7;
+const NUM_DAYS: usize = 8;
 
 #[global_allocator]
 pub static GLOBAL: &stats_alloc::StatsAlloc<std::alloc::System> = &stats_alloc::INSTRUMENTED_SYSTEM;
@@ -23,6 +24,7 @@ static DAY_FUNCS: [(PartFn, PartFn); NUM_DAYS] = [
     (day5::part1, day5::part2),
     (day6::part1, day6::part2),
     (day7::part1, day7::part2),
+    (day8::part1, day8::part2),
 ];
 
 fn main() {
