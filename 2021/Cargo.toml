@@ -5,12 +5,11 @@ authors = ["Jeremy Burns <j@jaburns.net>"]
 edition = "2018"
 
 [dependencies]
+hashbrown = "0.11.2"
 modinverse = "0.1.1"
 num = "0.3.1"
 num-derive = "0.3.3"
 num-traits = "0.2.14"
-plotters = "0.3.1"
-rayon = "1.5.1"
 regex = "1.4.2"
 stats_alloc = "0.1.8"
 
