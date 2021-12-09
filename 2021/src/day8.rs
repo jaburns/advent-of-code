@@ -63,6 +63,7 @@ fn decode_digits_from_notes(pattern_notes: &str) -> [HashSet<char>; 10] {
         SupersetOf(usize),
         SubsetOf(usize),
     }
+    use SegmentConstraint::*;
 
     let mut take_digit = |digit: usize, constraints: &[SegmentConstraint]| {
         let idx = in_sets
@@ -70,19 +71,19 @@ fn decode_digits_from_notes(pattern_notes: &str) -> [HashSet<char>; 10] {
             .position(|segs| {
                 for cons in constraints.iter() {
                     match *cons {
-                        SegmentConstraint::Count(c) => {
+                        Count(c) => {
                             if segs.len() != c {
                                 return false;
                             }
                         }
-                        SegmentConstraint::SupersetOf(d) => {
+                        SupersetOf(d) => {
                             for seg in out_mapping[d].iter() {
                                 if !segs.contains(seg) {
                                     return false;
                                 }
                             }
                         }
-                        SegmentConstraint::SubsetOf(d) => {
+                        SubsetOf(d) => {
                             for seg in segs.iter() {
                                 if !out_mapping[d].contains(seg) {
                                     return false;
@@ -97,33 +98,15 @@ fn decode_digits_from_notes(pattern_notes: &str) -> [HashSet<char>; 10] {
         out_mapping[digit] = in_sets.remove(idx);
     };
 
-    take_digit(1, &[SegmentConstraint::Count(2)]);
-    take_digit(4, &[SegmentConstraint::Count(4)]);
-    take_digit(7, &[SegmentConstraint::Count(3)]);
-    take_digit(8, &[SegmentConstraint::Count(7)]);
-    take_digit(
-        3,
-        &[
-            SegmentConstraint::Count(5),
-            SegmentConstraint::SupersetOf(1),
-        ],
-    );
-    take_digit(
-        9,
-        &[
-            SegmentConstraint::Count(6),
-            SegmentConstraint::SupersetOf(4),
-        ],
-    );
-    take_digit(
-        0,
-        &[
-            SegmentConstraint::Count(6),
-            SegmentConstraint::SupersetOf(7),
-        ],
-    );
-    take_digit(6, &[SegmentConstraint::Count(6)]);
-    take_digit(5, &[SegmentConstraint::SubsetOf(6)]);
+    take_digit(1, &[Count(2)]);
+    take_digit(4, &[Count(4)]);
+    take_digit(7, &[Count(3)]);
+    take_digit(8, &[Count(7)]);
+    take_digit(9, &[Count(6), SupersetOf(4)]);
+    take_digit(0, &[Count(6), SupersetOf(7)]);
+    take_digit(6, &[Count(6)]);
+    take_digit(3, &[SupersetOf(1)]);
+    take_digit(5, &[SubsetOf(6)]);
     take_digit(2, &[]);
 
     out_mapping
