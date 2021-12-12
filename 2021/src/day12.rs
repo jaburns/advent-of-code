@@ -1,5 +1,42 @@
 use hashbrown::{HashMap, HashSet};
-use std::{fmt::Write, rc::Rc};
+use std::fmt::Write;
+
+pub fn part1(lines: &[&str], out: &mut String) {
+    let result = find_paths(lines, false);
+    write!(out, "{}", result).unwrap();
+}
+
+pub fn part2(lines: &[&str], out: &mut String) {
+    let result = find_paths(lines, true);
+    write!(out, "{}", result).unwrap();
+}
+
+fn find_paths(lines: &[&str], allow_second_visit: bool) -> u32 {
+    let caves = CaveSystem::parse(lines);
+    let mut walks = vec![CaveWalk::new(&caves, allow_second_visit)];
+    let mut completed_paths = 0_u32;
+
+    loop {
+        let mut should_break = true;
+        let mut walks_out = vec![];
+
+        for walk in walks {
+            if walk.step(&mut walks_out) {
+                completed_paths += 1;
+            } else {
+                should_break = false;
+            }
+        }
+
+        walks = walks_out;
+
+        if should_break {
+            break;
+        }
+    }
+
+    completed_paths
+}
 
 #[derive(Debug)]
 struct CaveSystem<'a> {
@@ -8,7 +45,7 @@ struct CaveSystem<'a> {
 }
 
 impl<'a> CaveSystem<'a> {
-    fn parse(lines: &'_ [&'a str]) -> Self {
+    fn parse(lines: &[&'a str]) -> Self {
         let mut ret = CaveSystem {
             edges: HashMap::default(),
             big_caves: HashSet::default(),
@@ -40,26 +77,25 @@ impl<'a> CaveSystem<'a> {
 }
 
 #[derive(Debug)]
-struct CaveWalk<'a, const MAX_VISITS: u32> {
-    system: Rc<CaveSystem<'a>>,
+struct CaveWalk<'a, 'b> {
+    system: &'b CaveSystem<'a>,
     visited: HashMap<&'a str, u32>,
-    breadcrumbs: Vec<&'a str>,
+    allow_second_visit: bool,
     node: &'a str,
 }
 
-impl<'a, const MAX_VISITS: u32> CaveWalk<'a, MAX_VISITS> {
-    fn new(system: CaveSystem<'a>) -> Self {
+impl<'a, 'b> CaveWalk<'a, 'b> {
+    fn new(system: &'a CaveSystem<'a>, allow_second_visit: bool) -> Self {
         Self {
-            system: Rc::new(system),
+            system,
             visited: HashMap::default(),
-            breadcrumbs: vec!["start"],
+            allow_second_visit,
             node: "start",
         }
     }
 
-    fn step(mut self, walks_out: &mut Vec<CaveWalk<'a, MAX_VISITS>>) -> bool {
+    fn step(mut self, walks_out: &mut Vec<CaveWalk<'a, 'b>>) -> bool {
         if self.node == "end" {
-            println!("{:?}", self.breadcrumbs);
             return true;
         }
 
@@ -72,59 +108,21 @@ impl<'a, const MAX_VISITS: u32> CaveWalk<'a, MAX_VISITS> {
                 continue;
             }
 
-            if *self.visited.get(next_node).unwrap_or(&0) >= MAX_VISITS {
+            let visit_count = *self.visited.get(next_node).unwrap_or(&0);
+            let max_visits = if self.allow_second_visit { 2 } else { 1 };
+
+            if visit_count >= max_visits {
                 continue;
             }
 
-            let mut breadcrumbs = self.breadcrumbs.clone();
-            breadcrumbs.push(next_node);
-
             walks_out.push(Self {
-                system: self.system.clone(),
+                system: self.system,
                 visited: self.visited.clone(),
-                breadcrumbs,
+                allow_second_visit: self.allow_second_visit && visit_count == 0,
                 node: next_node,
             });
         }
 
         false
     }
-}
-
-fn find_paths<const MAX_VISITS: u32>(lines: &[&str]) -> u32 {
-    let caves = CaveSystem::parse(lines);
-
-    let mut walks = vec![CaveWalk::<MAX_VISITS>::new(caves)];
-    let mut total_paths = 0_u32;
-
-    loop {
-        let mut non_terminated_count = 0;
-        let mut walks_out = vec![];
-
-        for walk in walks {
-            if walk.step(&mut walks_out) {
-                total_paths += 1;
-            } else {
-                non_terminated_count += 1;
-            }
-        }
-
-        walks = walks_out;
-
-        if non_terminated_count == 0 {
-            break;
-        }
-    }
-
-    total_paths
-}
-
-pub fn part1(lines: &[&str], out: &mut String) {
-    let result = find_paths::<1>(lines);
-    write!(out, "{}", result).unwrap();
-}
-
-pub fn part2(lines: &[&str], out: &mut String) {
-    let result = find_paths::<2>(lines);
-    write!(out, "{}", result).unwrap();
 }
