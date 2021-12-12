@@ -2,10 +2,10 @@ use std::fmt::Write;
 
 #[derive(Copy, Clone, Eq, PartialEq)]
 enum Chunk {
-    Paren = 1,
-    Square = 2,
-    Brace = 3,
-    Angle = 4,
+    Paren,
+    Square,
+    Brace,
+    Angle,
 }
 
 enum ParseResult {
@@ -77,7 +77,12 @@ fn parse_chunk_line(stack: &mut Vec<Chunk>, line: &str) -> ParseResult {
     let mut score = 0;
     while let Some(ch) = stack.pop() {
         score *= 5;
-        score += ch as u64;
+        score += match ch {
+            Paren => 1,
+            Square => 2,
+            Brace => 3,
+            Angle => 4,
+        };
     }
 
     ParseResult::Incomplete(score)
