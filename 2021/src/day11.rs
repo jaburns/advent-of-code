@@ -38,37 +38,16 @@ fn step_grid(grid: &mut Grid) -> u32 {
                 grid[x][y].1 = true;
                 flashes += 1;
 
-                if x > 0 {
-                    if y > 0 && !grid[x - 1][y - 1].1 {
-                        grid[x - 1][y - 1].0 += 1;
-                    }
-                    if !grid[x - 1][y].1 {
-                        grid[x - 1][y].0 += 1;
-                    }
-                    if y < 9 && !grid[x - 1][y + 1].1 {
-                        grid[x - 1][y + 1].0 += 1;
-                    }
-                }
+                let min_x = if x == 0 { 0 } else { x - 1 };
+                let max_x = (x + 1).min(9);
+                let min_y = if y == 0 { 0 } else { y - 1 };
+                let max_y = (y + 1).min(9);
 
-                if y > 0 && !grid[x][y - 1].1 {
-                    grid[x][y - 1].0 += 1;
-                }
-                if !grid[x][y].1 {
-                    grid[x][y].0 += 1;
-                }
-                if y < 9 && !grid[x][y + 1].1 {
-                    grid[x][y + 1].0 += 1;
-                }
-
-                if x < 9 {
-                    if y > 0 && !grid[x + 1][y - 1].1 {
-                        grid[x + 1][y - 1].0 += 1;
-                    }
-                    if !grid[x + 1][y].1 {
-                        grid[x + 1][y].0 += 1;
-                    }
-                    if y < 9 && !grid[x + 1][y + 1].1 {
-                        grid[x + 1][y + 1].0 += 1;
+                for nx in min_x..=max_x {
+                    for ny in min_y..=max_y {
+                        if !grid[nx][ny].1 {
+                            grid[nx][ny].0 += 1;
+                        }
                     }
                 }
             }
@@ -84,22 +63,11 @@ fn step_grid(grid: &mut Grid) -> u32 {
     total_flashes
 }
 
-fn print_grid(grid: &Grid) {
-    for y in 0..10 {
-        for x in 0..10 {
-            print!("{}", grid[x][y].0);
-        }
-        println!();
-    }
-    println!();
-}
-
 pub fn part1(lines: &[&str], out: &mut String) {
     let mut grid = parse_grid(lines);
     let mut flashes = 0;
 
     for _ in 0..100 {
-        //print_grid(&grid);
         flashes += step_grid(&mut grid);
     }
 
@@ -107,7 +75,12 @@ pub fn part1(lines: &[&str], out: &mut String) {
 }
 
 pub fn part2(lines: &[&str], out: &mut String) {
-    let result = lines.len();
+    let mut grid = parse_grid(lines);
+    let mut counter = 1;
 
-    write!(out, "{}", result).unwrap();
+    while step_grid(&mut grid) < 100 {
+        counter += 1;
+    }
+
+    write!(out, "{}", counter).unwrap();
 }

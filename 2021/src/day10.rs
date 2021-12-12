@@ -19,7 +19,6 @@ pub fn parts_1_and_2(lines: &[&str], out: &mut String) {
     let mut incomplete_scores = Vec::with_capacity(255);
 
     for line in lines.iter() {
-        stack.clear();
         match parse_chunk_line(&mut stack, line) {
             ParseResult::Corrupted(score) => {
                 corrupted_score += score;
@@ -43,6 +42,8 @@ pub fn parts_1_and_2(lines: &[&str], out: &mut String) {
 
 fn parse_chunk_line(stack: &mut Vec<Chunk>, line: &str) -> ParseResult {
     use Chunk::*;
+
+    stack.clear();
 
     for ch in line.chars() {
         match ch {
