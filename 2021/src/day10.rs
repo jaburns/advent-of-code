@@ -13,6 +13,39 @@ enum ParseResult {
     Corrupted(u64),
 }
 
+pub fn part1(lines: &[&str], out: &mut String) {
+    let result: u64 = lines
+        .iter()
+        .map(|x| {
+            if let ParseResult::Corrupted(y) = parse_chunk_line(x) {
+                y
+            } else {
+                0
+            }
+        })
+        .sum();
+    write!(out, "{}", result).unwrap();
+}
+
+pub fn part2(lines: &[&str], out: &mut String) {
+    let mut stack_scores: Vec<u64> = lines
+        .iter()
+        .filter_map(|x| {
+            if let ParseResult::Incomplete(y) = parse_chunk_line(x) {
+                Some(score_remaining_stack(y))
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    stack_scores.sort_unstable();
+
+    let result = stack_scores[stack_scores.len() / 2];
+
+    write!(out, "{}", result).unwrap();
+}
+
 fn parse_chunk_line(line: &str) -> ParseResult {
     use Chunk::*;
 
@@ -60,37 +93,4 @@ fn score_remaining_stack(mut stack: Vec<Chunk>) -> u64 {
         score += ch as u64;
     }
     score
-}
-
-pub fn part1(lines: &[&str], out: &mut String) {
-    let result: u64 = lines
-        .iter()
-        .map(|x| {
-            if let ParseResult::Corrupted(y) = parse_chunk_line(x) {
-                y
-            } else {
-                0
-            }
-        })
-        .sum();
-    write!(out, "{}", result).unwrap();
-}
-
-pub fn part2(lines: &[&str], out: &mut String) {
-    let mut stack_scores: Vec<u64> = lines
-        .iter()
-        .filter_map(|x| {
-            if let ParseResult::Incomplete(y) = parse_chunk_line(x) {
-                Some(score_remaining_stack(y))
-            } else {
-                None
-            }
-        })
-        .collect();
-
-    stack_scores.sort_unstable();
-
-    let result = stack_scores[stack_scores.len() / 2];
-
-    write!(out, "{}", result).unwrap();
 }
