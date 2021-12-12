@@ -3,6 +3,28 @@ use std::fmt::Write;
 
 type Grid = [[(u8, bool); 10]; 10];
 
+pub fn part1(lines: &[&str], out: &mut String) {
+    let mut grid = parse_grid(lines);
+    let mut flashes = 0;
+
+    for _ in 0..100 {
+        flashes += step_grid(&mut grid);
+    }
+
+    write!(out, "{}", flashes).unwrap();
+}
+
+pub fn part2(lines: &[&str], out: &mut String) {
+    let mut grid = parse_grid(lines);
+    let mut counter = 1;
+
+    while step_grid(&mut grid) < 100 {
+        counter += 1;
+    }
+
+    write!(out, "{}", counter).unwrap();
+}
+
 fn parse_grid(lines: &[&str]) -> Grid {
     let mut ret = Grid::default();
 
@@ -61,26 +83,4 @@ fn step_grid(grid: &mut Grid) -> u32 {
     }
 
     total_flashes
-}
-
-pub fn part1(lines: &[&str], out: &mut String) {
-    let mut grid = parse_grid(lines);
-    let mut flashes = 0;
-
-    for _ in 0..100 {
-        flashes += step_grid(&mut grid);
-    }
-
-    write!(out, "{}", flashes).unwrap();
-}
-
-pub fn part2(lines: &[&str], out: &mut String) {
-    let mut grid = parse_grid(lines);
-    let mut counter = 1;
-
-    while step_grid(&mut grid) < 100 {
-        counter += 1;
-    }
-
-    write!(out, "{}", counter).unwrap();
 }
