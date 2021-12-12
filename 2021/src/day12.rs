@@ -77,14 +77,14 @@ impl<'a> CaveSystem<'a> {
 }
 
 #[derive(Debug)]
-struct CaveWalk<'a, 'b> {
-    system: &'b CaveSystem<'a>,
+struct CaveWalk<'a> {
+    system: &'a CaveSystem<'a>,
     visited: HashMap<&'a str, u32>,
     allow_second_visit: bool,
     node: &'a str,
 }
 
-impl<'a, 'b> CaveWalk<'a, 'b> {
+impl<'a> CaveWalk<'a> {
     fn new(system: &'a CaveSystem<'a>, allow_second_visit: bool) -> Self {
         Self {
             system,
@@ -94,7 +94,7 @@ impl<'a, 'b> CaveWalk<'a, 'b> {
         }
     }
 
-    fn step(mut self, walks_out: &mut Vec<CaveWalk<'a, 'b>>) -> bool {
+    fn step(mut self, walks_out: &mut Vec<CaveWalk<'a>>) -> bool {
         if self.node == "end" {
             return true;
         }
