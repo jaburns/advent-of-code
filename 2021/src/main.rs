@@ -77,7 +77,12 @@ fn main() {
 
             println!("Solution: {}", out_str);
             println!("Time (μs): {}", delta_time.as_micros());
-            println!("{:#?}", stats);
+            println!("Allocations: {}", stats.allocations + stats.reallocations);
+            println!(
+                "Memory (bytes): {}",
+                stats.bytes_allocated + stats.bytes_reallocated.max(0) as usize
+            );
+            println!();
 
             out_str.clear();
 
@@ -92,7 +97,12 @@ fn main() {
 
             println!("Solution: {}", out_str);
             println!("Time (μs): {}", delta_time.as_micros());
-            println!("{:#?}", stats);
+            println!("Allocations: {}", stats.allocations + stats.reallocations);
+            println!(
+                "Memory (bytes): {}",
+                stats.bytes_allocated + stats.bytes_reallocated.max(0) as usize
+            );
+            println!();
         }
         DayFn::Combined(f) => {
             println!();
@@ -106,7 +116,12 @@ fn main() {
 
             println!("Solution: {}", out_str);
             println!("Time (μs): {}", delta_time.as_micros());
-            println!("{:#?}", stats);
+            println!("Allocations: {}", stats.allocations + stats.reallocations);
+            println!(
+                "Memory (bytes): {}",
+                stats.bytes_allocated + stats.bytes_reallocated.max(0) as usize
+            );
+            println!();
         }
     }
 }
