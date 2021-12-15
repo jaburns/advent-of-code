@@ -30,13 +30,16 @@ fn apply_rules_to_pair_counts(rules: &RuleSet, pair_counts: &mut PairCounts) {
     pair_counts.clone_from(&new_pair_counts);
 }
 
-fn count_chain_elements(first_element: char, pair_counts: &PairCounts) -> Vec<(char, u64)> {
+fn get_max_element_count_difference(first_element: char, pair_counts: &PairCounts) -> u64 {
     let mut counts = HashMap::<char, u64>::new();
     counts.insert(first_element, 1);
     for ((_, b), count) in pair_counts.iter() {
         *counts.entry(*b).or_insert(0) += *count;
     }
-    counts.into_iter().collect()
+
+    let mut counts: Vec<u64> = counts.into_iter().map(|(_, x)| x).collect();
+    counts.sort_unstable();
+    counts[counts.len() - 1] - counts[0]
 }
 
 fn simulate_chain_and_get_disparity(iterations: u32, lines: &[&str], out: &mut String) {
@@ -56,9 +59,7 @@ fn simulate_chain_and_get_disparity(iterations: u32, lines: &[&str], out: &mut S
         apply_rules_to_pair_counts(&rules, &mut counts);
     }
 
-    let mut counts = count_chain_elements(chars[0], &counts);
-    counts.sort_unstable_by(|a, b| b.1.cmp(&a.1));
-    let result = counts[0].1 - counts[counts.len() - 1].1;
+    let result = get_max_element_count_difference(chars[0], &counts);
     write!(out, "{}", result).unwrap();
 }
 
