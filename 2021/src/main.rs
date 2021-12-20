@@ -49,7 +49,7 @@ static DAY_FUNCS: [DayFn; NUM_DAYS] = [
     DayFn::Separate(day15::part1, day15::part2),
     DayFn::Combined(day16::parts_1_and_2),
     DayFn::Combined(day17::parts_1_and_2),
-    DayFn::Combined(day18::parts_1_and_2),
+    DayFn::Separate(day18::part1, day18::part2),
 ];
 
 fn main() {

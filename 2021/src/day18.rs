@@ -3,12 +3,12 @@ use std::fmt::Write;
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 enum SnailNumElement {
     Push,
-    Value(u8),
+    Value(u32),
     Pop,
 }
 
 impl SnailNumElement {
-    fn to_value(self) -> u8 {
+    fn to_value(self) -> u32 {
         if let SnailNumElement::Value(v) = self {
             v
         } else {
@@ -29,7 +29,7 @@ impl SnailNum {
                 '[' => result.push(SnailNumElement::Push),
                 ']' => result.push(SnailNumElement::Pop),
                 ',' => {}
-                '0'..='9' => result.push(SnailNumElement::Value(ch.to_digit(10).unwrap() as u8)),
+                '0'..='9' => result.push(SnailNumElement::Value(ch.to_digit(10).unwrap())),
                 _ => panic!(),
             }
         }
@@ -64,7 +64,7 @@ impl SnailNum {
     fn split_at(&mut self, idx: usize) {
         let val = self.0[idx].to_value();
         let lval = val >> 1;
-        let rval = lval + (val & 1 != 0) as u8;
+        let rval = lval + (val & 1 != 0) as u32;
 
         self.0.insert(idx, SnailNumElement::Push);
         self.0[idx + 1] = SnailNumElement::Value(lval);
@@ -103,25 +103,69 @@ impl SnailNum {
         true
     }
 
-    fn evaluate_magnitude(&self) -> u32 {
-        0
+    fn evaluate_magnitude(mut self) -> u32 {
+        'outer: while self.0.len() > 1 {
+            for i in 0..(self.0.len() - 3) {
+                let a = self.0[i];
+                let b = self.0[i + 1];
+                let c = self.0[i + 2];
+                let d = self.0[i + 3];
+
+                if a == SnailNumElement::Push && d == SnailNumElement::Pop {
+                    if let (SnailNumElement::Value(b), SnailNumElement::Value(c)) = (b, c) {
+                        self.0.remove(i);
+                        self.0.remove(i);
+                        self.0.remove(i);
+                        *self.0.get_mut(i).unwrap() = SnailNumElement::Value(3 * b + 2 * c);
+                        continue 'outer;
+                    }
+                }
+            }
+            break;
+        }
+        self.0[0].to_value()
+    }
+
+    fn add_and_reduce(&self, rhs: &Self) -> Self {
+        let mut result = vec![SnailNumElement::Push];
+        result.extend(self.0.iter());
+        result.extend(rhs.0.iter());
+        result.push(SnailNumElement::Pop);
+        let mut result = Self(result);
+
+        while !result.step_reduce() {}
+
+        result
     }
 }
 
-pub fn parts_1_and_2(lines: &[&str], out: &mut String) {
+pub fn part1(lines: &[&str], out: &mut String) {
     let mut nums: Vec<SnailNum> = lines.iter().map(|&x| SnailNum::parse(x)).rev().collect();
     let mut result = nums.pop().unwrap();
 
     while !nums.is_empty() {
-        let mut next_num = nums.pop().unwrap();
-        let mut new_result = vec![SnailNumElement::Push];
-        new_result.append(&mut result.0);
-        new_result.append(&mut next_num.0);
-        new_result.push(SnailNumElement::Pop);
-        result = SnailNum(new_result);
-
-        while !result.step_reduce() {}
+        result = SnailNum::add_and_reduce(&result, &nums.pop().unwrap());
     }
 
-    write!(out, "{:?}", result).unwrap();
+    let result = result.evaluate_magnitude();
+
+    write!(out, "{}", result).unwrap();
+}
+
+pub fn part2(lines: &[&str], out: &mut String) {
+    let nums: Vec<SnailNum> = lines.iter().map(|&x| SnailNum::parse(x)).rev().collect();
+
+    let mut max_value = 0_u32;
+
+    for i in 0..nums.len() {
+        for j in 0..nums.len() {
+            if i == j {
+                continue;
+            }
+            max_value =
+                max_value.max(SnailNum::add_and_reduce(&nums[i], &nums[j]).evaluate_magnitude());
+        }
+    }
+
+    write!(out, "{}", max_value).unwrap();
 }
