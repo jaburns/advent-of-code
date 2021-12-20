@@ -33,7 +33,7 @@ pub fn parts_1_and_2(lines: &[&str], out: &mut String) {
 
     write!(
         out,
-        " {}  {}",
+        "{}  {}",
         corrupted_score,
         incomplete_scores[incomplete_scores.len() / 2]
     )
