@@ -5,7 +5,7 @@ authors = ["Jeremy Burns <j@jaburns.net>"]
 edition = "2018"
 
 [dependencies]
-glam = "0.20.2"
+glam = { version = "0.20.2", features = ["glam-assert"] }
 hashbrown = "0.11.2"
 modinverse = "0.1.1"
 num = "0.3.1"

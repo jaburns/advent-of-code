@@ -1,5 +1,4 @@
-#![allow(clippy::never_loop)]
-use glam::{Affine3A, IVec3};
+use glam::{IVec3, Mat3, Vec3};
 use hashbrown::{HashMap, HashSet};
 use std::fmt::Write;
 
@@ -40,14 +39,12 @@ pub fn part1(lines: &[&str], out: &mut String) {
         let (i, j, _) = pairwise_match_scores[0];
 
         let (next_id, next_placement, relative_scanner) = if placed_scanners.contains_key(&i) {
-            println!("Placing {} relative to {}", j, i);
             (
                 j,
                 scanners.remove(&j).unwrap(),
                 placed_scanners.get(&i).unwrap(),
             )
         } else {
-            println!("Placing {} relative to {}", i, j);
             (
                 i,
                 scanners.remove(&i).unwrap(),
@@ -82,7 +79,6 @@ struct ScannerData {
 
 #[derive(Debug)]
 struct PlacedScanner {
-    placement: Affine3A,
     absolute_beacons: Vec<IVec3>,
     data: ScannerData,
 }
@@ -138,6 +134,7 @@ fn get_internal_distances_for_relative_beacons(beacons: &[IVec3]) -> HashMap<i32
         for j in 0..i {
             let delta = beacons[i] - beacons[j];
             let d2 = delta.dot(delta);
+            // Assert every distance pair observed by a beacon is unique
             assert!(!result.contains_key(&d2));
             result.insert(d2, (i, j));
         }
@@ -159,15 +156,166 @@ impl ScannerData {
 
     fn place_original(self) -> PlacedScanner {
         PlacedScanner {
-            placement: Affine3A::IDENTITY,
             absolute_beacons: self.relative_beacons.clone(),
             data: self,
         }
     }
 
     fn place_relative(self, other: &PlacedScanner) -> PlacedScanner {
-        todo!()
+        let mut self_line_i: usize = 0;
+        let mut self_line_j: usize = 0;
+        let self_line_k: usize;
+        let mut other_line_i: usize = 0;
+        let mut other_line_j: usize = 0;
+        let other_line_k: usize;
+
+        'top: for (d0, (i0, j0)) in self.internal_distances.iter() {
+            for (d1, (i1, j1)) in other.data.internal_distances.iter() {
+                if d0 != d1 {
+                    continue;
+                }
+                // We have a first edge in self and other with matching lengths
+
+                for (d2, (i2, j2)) in self.internal_distances.iter() {
+                    if i0 != i2 && i0 != j2 && j0 != j2 && j0 != i2 {
+                        continue;
+                    }
+                    if i0 == i2 && j0 == j2 || i0 == j2 && j0 == i2 {
+                        continue;
+                    }
+                    // We have a second edge in self sharing a node with first edge
+
+                    for (d3, (i3, j3)) in other.data.internal_distances.iter() {
+                        if i1 != i3 && i1 != j3 && j1 != j3 && j1 != i3 {
+                            continue;
+                        }
+                        if i1 == i3 && j1 == j3 || i1 == j3 && j1 == i3 {
+                            continue;
+                        }
+                        // We have a second edge in other sharing a node with the first edge
+
+                        if d3 == d2 {
+                            // We have a matching pair of segments connected by one node
+
+                            if i0 == i2 {
+                                self_line_i = *j0;
+                                self_line_j = *i0;
+                                self_line_k = *j2;
+                            } else if i0 == j2 {
+                                self_line_i = *j0;
+                                self_line_j = *i0;
+                                self_line_k = *i2;
+                            } else if j0 == i2 {
+                                self_line_i = *i0;
+                                self_line_j = *j0;
+                                self_line_k = *j2;
+                            } else {
+                                self_line_i = *i0; // j0 == j2
+                                self_line_j = *j0;
+                                self_line_k = *i2;
+                            }
+
+                            if i1 == i3 {
+                                other_line_i = *j1;
+                                other_line_j = *i1;
+                                other_line_k = *j3;
+                            } else if i1 == j3 {
+                                other_line_i = *j1;
+                                other_line_j = *i1;
+                                other_line_k = *i3;
+                            } else if j1 == i3 {
+                                other_line_i = *i1;
+                                other_line_j = *j1;
+                                other_line_k = *j3;
+                            } else {
+                                other_line_i = *i1; // j1 == j3
+                                other_line_j = *j1;
+                                other_line_k = *i3;
+                            }
+
+                            // Sanity check
+                            {
+                                let da0 = self.relative_beacons[self_line_i]
+                                    - self.relative_beacons[self_line_j];
+                                let da0 = da0.dot(da0);
+                                let da1 = self.relative_beacons[self_line_j]
+                                    - self.relative_beacons[self_line_k];
+                                let da1 = da1.dot(da1);
+
+                                let db0 = other.data.relative_beacons[other_line_i]
+                                    - other.data.relative_beacons[other_line_j];
+                                let db0 = db0.dot(db0);
+                                let db1 = other.data.relative_beacons[other_line_j]
+                                    - other.data.relative_beacons[other_line_k];
+                                let db1 = db1.dot(db1);
+
+                                assert!(da0 == db0);
+                                assert!(da1 == db1);
+                            }
+
+                            break 'top;
+                        }
+                    }
+                }
+            }
+        }
+
+        let base_va = other.absolute_beacons[other_line_i] - other.absolute_beacons[other_line_j];
+
+        let incoming_rotated_va =
+            self.relative_beacons[self_line_i] - self.relative_beacons[self_line_j];
+
+        let rotation_to_global_space = find_cube_rotation_matrix(&incoming_rotated_va, &base_va);
+
+        let scanner_global_pos = other.absolute_beacons[other_line_j]
+            + rotation_to_global_space
+                .mul_vec3(-self.relative_beacons[self_line_j].as_vec3())
+                .as_ivec3();
+
+        let absolute_beacons: Vec<_> = self
+            .relative_beacons
+            .iter()
+            .map(|&rel| {
+                rotation_to_global_space.mul_vec3(rel.as_vec3()).as_ivec3() + scanner_global_pos
+            })
+            .collect();
+
+        PlacedScanner {
+            data: self,
+            absolute_beacons,
+        }
     }
+}
+
+fn find_cube_rotation_matrix(from: &IVec3, to: &IVec3) -> Mat3 {
+    let xcol = if from.x.abs() == to.x.abs() {
+        Vec3::X * (to.x * from.x).signum() as f32
+    } else if from.x.abs() == to.y.abs() {
+        Vec3::Y * (to.y * from.x).signum() as f32
+    } else {
+        // if from.x.abs() == to.z.abs() {
+        Vec3::Z * (to.z * from.x).signum() as f32
+    };
+
+    let ycol = if from.y.abs() == to.x.abs() {
+        Vec3::X * (to.x * from.y).signum() as f32
+    } else if from.y.abs() == to.y.abs() {
+        Vec3::Y * (to.y * from.y).signum() as f32
+    } else {
+        // if from.y.abs() == to.z.abs() {
+        Vec3::Z * (to.z * from.y).signum() as f32
+    };
+
+    let zcol = if from.z.abs() == to.x.abs() {
+        Vec3::X * (to.x * from.z).signum() as f32
+    } else if from.z.abs() == to.y.abs() {
+        Vec3::Y * (to.y * from.z).signum() as f32
+    } else {
+        // if from.z.abs() == to.z.abs() {
+        Vec3::Z * (to.z * from.z).signum() as f32
+    };
+
+    Mat3::from_cols(xcol, ycol, zcol)
 }
 
 fn count_unique_beacon_positions(scanners: &HashMap<u8, PlacedScanner>) -> usize {
