@@ -2,7 +2,7 @@ use glam::{IVec3, Mat3, Vec3};
 use hashbrown::{HashMap, HashSet};
 use std::fmt::Write;
 
-pub fn part1(lines: &[&str], out: &mut String) {
+pub fn parts_1_and_2(lines: &[&str], out: &mut String) {
     let mut scanners = parse_scanner_data(lines);
 
     let mut pairwise_match_scores = vec![];
@@ -60,15 +60,13 @@ pub fn part1(lines: &[&str], out: &mut String) {
         });
     }
 
-    let result = count_unique_beacon_positions(&placed_scanners);
+    let beacons = get_unique_beacon_positions(&placed_scanners);
+    let scanner_positions: Vec<_> = placed_scanners.values().map(|x| x.position).collect();
 
-    write!(out, "{}", result).unwrap();
-}
+    let result_1 = beacons.len();
+    let result_2 = max_manhattan_between_pts(&scanner_positions);
 
-pub fn part2(lines: &[&str], out: &mut String) {
-    let result = lines.len();
-
-    write!(out, "{}", result).unwrap();
+    write!(out, "{}  {}", result_1, result_2).unwrap();
 }
 
 #[derive(Debug)]
@@ -79,6 +77,7 @@ struct ScannerData {
 
 #[derive(Debug)]
 struct PlacedScanner {
+    position: IVec3,
     absolute_beacons: Vec<IVec3>,
     data: ScannerData,
 }
@@ -156,6 +155,7 @@ impl ScannerData {
 
     fn place_original(self) -> PlacedScanner {
         PlacedScanner {
+            position: IVec3::ZERO,
             absolute_beacons: self.relative_beacons.clone(),
             data: self,
         }
@@ -281,6 +281,7 @@ impl ScannerData {
             .collect();
 
         PlacedScanner {
+            position: scanner_global_pos,
             data: self,
             absolute_beacons,
         }
@@ -318,7 +319,7 @@ fn find_cube_rotation_matrix(from: &IVec3, to: &IVec3) -> Mat3 {
     Mat3::from_cols(xcol, ycol, zcol)
 }
 
-fn count_unique_beacon_positions(scanners: &HashMap<u8, PlacedScanner>) -> usize {
+fn get_unique_beacon_positions(scanners: &HashMap<u8, PlacedScanner>) -> Vec<IVec3> {
     let mut points = HashSet::<IVec3>::new();
 
     for scan in scanners.values() {
@@ -327,5 +328,21 @@ fn count_unique_beacon_positions(scanners: &HashMap<u8, PlacedScanner>) -> usize
         }
     }
 
-    points.len()
+    points.into_iter().collect()
+}
+
+fn manhattan(a: &IVec3, b: &IVec3) -> i32 {
+    (a.x - b.x).abs() + (a.y - b.y).abs() + (a.z - b.z).abs()
+}
+
+fn max_manhattan_between_pts(pts: &[IVec3]) -> i32 {
+    let mut max = 0_i32;
+
+    for i in 1..pts.len() {
+        for j in 0..i {
+            max = max.max(manhattan(&pts[i], &pts[j]));
+        }
+    }
+
+    max
 }
