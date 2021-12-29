@@ -12,6 +12,12 @@ mod day17;
 mod day18;
 mod day19;
 mod day2;
+mod day20;
+mod day21;
+mod day22;
+mod day23;
+mod day24;
+mod day25;
 mod day3;
 mod day4;
 mod day5;
@@ -20,7 +26,7 @@ mod day7;
 mod day8;
 mod day9;
 
-const NUM_DAYS: usize = 19;
+const NUM_DAYS: usize = 25;
 
 #[global_allocator]
 pub static GLOBAL: &stats_alloc::StatsAlloc<std::alloc::System> = &stats_alloc::INSTRUMENTED_SYSTEM;
@@ -52,6 +58,12 @@ static DAY_FUNCS: [DayFn; NUM_DAYS] = [
     DayFn::Combined(day17::parts_1_and_2),
     DayFn::Separate(day18::part1, day18::part2),
     DayFn::Combined(day19::parts_1_and_2),
+    DayFn::Separate(day20::part1, day20::part2),
+    DayFn::Separate(day21::part1, day21::part2),
+    DayFn::Separate(day22::part1, day22::part2),
+    DayFn::Separate(day23::part1, day23::part2),
+    DayFn::Separate(day24::part1, day24::part2),
+    DayFn::Separate(day25::part1, day25::part2),
 ];
 
 fn main() {
