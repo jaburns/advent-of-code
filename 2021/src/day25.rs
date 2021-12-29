@@ -75,7 +75,7 @@ fn step_world(world0: &[Vec<Cell>]) -> Vec<Vec<Cell>> {
     world2
 }
 
-pub fn part1(lines: &[&str], out: &mut String) {
+pub fn parts_1_and_2(lines: &[&str], out: &mut String) {
     let mut world = lines
         .iter()
         .map(|x| x.chars().map(Cell::from_char).collect::<Vec<_>>())
@@ -94,10 +94,4 @@ pub fn part1(lines: &[&str], out: &mut String) {
     let result = count;
 
     write!(out, "{:?}", result).unwrap();
-}
-
-pub fn part2(lines: &[&str], out: &mut String) {
-    let result = lines.len();
-
-    write!(out, "{}", result).unwrap();
 }
