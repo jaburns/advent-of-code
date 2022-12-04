@@ -1,3 +1,6 @@
+// 185 characters
+#[allow(clippy::all)]
+#[rustfmt::skip]
 fn main() {
     let mut v: Vec<i32> = std::fs::read_to_string("I")
         .unwrap()

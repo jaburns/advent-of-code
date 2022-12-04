@@ -1,3 +1,5 @@
+// 140 characters
+#[allow(clippy::all)]
 #[rustfmt::skip]
 fn main() {
     [
