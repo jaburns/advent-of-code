@@ -11,6 +11,7 @@ const count = fs.readFileSync(`crates/day_${day}/src/main.rs`,'utf8')
     .join('')
     .replace(/\s/g,'')
     .replace('#[allow(clippy::all)]','')
+    .replace('#[rustfmt::skip]','')
     .trim()
     .length
 
