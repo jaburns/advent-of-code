@@ -8,7 +8,6 @@ fn main() {
         dbg!(std::fs::read("I")
             .unwrap()
             .chunks(4)
-            .map(|s| f(s[0], s[2]) as i32)
-            .sum::<i32>())
+            .fold(0, |a, s| a + f(s[0], s[2]) as i32))
     );
 }
