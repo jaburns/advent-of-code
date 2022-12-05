@@ -7,11 +7,13 @@ const day = process.argv[2]
 
 const count = fs.readFileSync(`crates/day_${day}/src/main.rs`,'utf8')
     .split('\n')
-    .map(x => x.trim().replace(/\/\/.*/, ''))
+    .map(x => x
+        .trim()
+        .replace(/\/\/.*/, '')
+        .replace(/#\[allow\(.*\)\]/g,'')
+        .replace('#[rustfmt::skip]','')
+        .replace(/\s/g,''))
     .join('')
-    .replace(/\s/g,'')
-    .replace('#[allow(clippy::all)]','')
-    .replace('#[rustfmt::skip]','')
     .trim()
     .length
 
