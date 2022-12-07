@@ -1,4 +1,4 @@
-// 606 characters (part 1 only)
+// 667 characters
 #[allow(clippy::all)]
 fn main() {
     use {std::collections::HashMap as M, u64 as U};
@@ -22,16 +22,24 @@ fn main() {
             }
         }
 
-        static mut S: U = 0;
-        fn f(t: &mut T) -> U {
-            let z = t.1.values().sum::<U>() + t.0.values_mut().map(f).sum::<U>();
-            if z <= 100000 {
-                unsafe { S += z }
+        static mut S: (U, U, U) = (0, 40000000, 0);
+        fn f(t: &T) -> U {
+            unsafe {
+                let z = t.1.values().sum::<U>() + t.0.values().map(f).sum::<U>();
+                if S.2 > 0 {
+                    if z <= 100000 {
+                        S.0 += z
+                    }
+                    if z > S.2 && z < S.1 {
+                        S.1 = z
+                    }
+                }
+                z
             }
-            z
         }
 
-        f(&mut t);
-        dbg!(S);
+        S.2 = f(&t) - S.1;
+        f(&t);
+        dbg!(S.0, S.1);
     }
 }
