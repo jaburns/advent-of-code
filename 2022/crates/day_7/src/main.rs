@@ -1,4 +1,4 @@
-// 656 characters
+// 650 characters
 #[allow(clippy::all)]
 fn main() {
     use {std::collections::HashMap as M, u64 as U};
@@ -7,7 +7,7 @@ fn main() {
 
     unsafe {
         let mut t = T::default();
-        let mut s = vec![(&mut t) as *mut T];
+        let mut s = vec![&mut t as *mut T];
 
         for l in std::fs::read_to_string("I").unwrap().lines() {
             let i = s.len() - 1;
@@ -16,7 +16,8 @@ fn main() {
             } else if &l[2..3] == "c" {
                 let c = (&mut *s[i]).0.entry(l[5..].into()).or_default();
                 s.push(c as *mut _);
-            } else if &l[0..1] != "d" && &l[2..3] != "l" {
+            }
+            if &l[0..1] != "d" && &l[0..1] != "$" {
                 l.split_once(' ')
                     .map(|(p, q)| (&mut *s[i]).1.insert(q.into(), p.parse().unwrap()));
             }
