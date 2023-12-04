@@ -1,0 +1,15 @@
+[package]
+name = "adventofcode2023"
+version = "0.1.0"
+authors = ["Jeremy Burns <j@jaburns.net>"]
+edition = "2018"
+
+[dependencies]
+derive_more = "0.99.17"
+glam = { version = "0.24.2", features = ["glam-assert"] }
+itertools = "0.12.0"
+smallvec = "1.11.2"
+stats_alloc = "0.1.8"
+
+[profile.release]
+debug = true

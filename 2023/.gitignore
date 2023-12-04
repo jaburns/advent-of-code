@@ -1,0 +1,4 @@
+/target
+**/*.rs.bk
+**/*_gen.rs
+/session.txt
