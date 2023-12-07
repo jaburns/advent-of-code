@@ -2,6 +2,34 @@ use glam::{ivec2, IVec2};
 use smallvec::SmallVec;
 use std::{collections::HashMap, fmt::Write};
 
+pub fn parts_1_and_2(lines: &[&str], out: &mut String) {
+    let mut sum = 0_u64;
+    let mut gears = HashMap::<IVec2, SmallVec<[u32; 3]>>::default();
+
+    let empty = ".".repeat(lines[0].len());
+
+    sum += sum_part_numbers(0, lines[0], &empty, lines[1], &mut gears);
+    sum += sum_part_numbers(
+        lines.len() as i32 - 1,
+        lines[lines.len() - 1],
+        lines[lines.len() - 2],
+        &empty,
+        &mut gears,
+    );
+    for i in 1..(lines.len() - 1) {
+        sum += sum_part_numbers(i as i32, lines[i], lines[i - 1], lines[i + 1], &mut gears);
+    }
+
+    let mut gear_sum = 0_u64;
+    for vals in gears.into_values() {
+        if vals.len() == 2 {
+            gear_sum += (vals[0] * vals[1]) as u64;
+        }
+    }
+
+    write!(out, "{}  {}", sum, gear_sum).unwrap();
+}
+
 #[allow(clippy::char_lit_as_u8)]
 const DOT: u8 = '.' as u8;
 #[allow(clippy::char_lit_as_u8)]
@@ -94,32 +122,4 @@ fn sum_part_numbers(
     }
 
     sum
-}
-
-pub fn parts_1_and_2(lines: &[&str], out: &mut String) {
-    let mut sum = 0_u64;
-    let mut gears = HashMap::<IVec2, SmallVec<[u32; 3]>>::default();
-
-    let empty = ".".repeat(lines[0].len());
-
-    sum += sum_part_numbers(0, lines[0], &empty, lines[1], &mut gears);
-    sum += sum_part_numbers(
-        lines.len() as i32 - 1,
-        lines[lines.len() - 1],
-        lines[lines.len() - 2],
-        &empty,
-        &mut gears,
-    );
-    for i in 1..(lines.len() - 1) {
-        sum += sum_part_numbers(i as i32, lines[i], lines[i - 1], lines[i + 1], &mut gears);
-    }
-
-    let mut gear_sum = 0_u64;
-    for vals in gears.into_values() {
-        if vals.len() == 2 {
-            gear_sum += (vals[0] * vals[1]) as u64;
-        }
-    }
-
-    write!(out, "{}  {}", sum, gear_sum).unwrap();
 }

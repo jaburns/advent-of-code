@@ -1,8 +1,5 @@
-use std::{fmt::Write, mem::swap, ops::Range};
-
 use smallvec::{smallvec, SmallVec};
-
-type Maps = Vec<Vec<(Range<i64>, i64)>>;
+use std::{fmt::Write, mem::swap, ops::Range};
 
 pub fn parts_1_and_2(lines: &[&str], out: &mut String) {
     let seeds: Vec<i64> = lines[0]
@@ -27,7 +24,7 @@ pub fn parts_1_and_2(lines: &[&str], out: &mut String) {
     write!(out, "{}  {}", result_1, result_2).unwrap();
 }
 
-fn get_maps(lines: &[&str]) -> Maps {
+fn get_maps(lines: &[&str]) -> Vec<Vec<(Range<i64>, i64)>> {
     const MAPS_COUNT: usize = 8;
     const MAP_SIZE: usize = 64;
 
@@ -58,7 +55,7 @@ fn get_maps(lines: &[&str]) -> Maps {
     maps
 }
 
-fn run_ranges_through_maps(maps: &Maps, seed_ranges: Vec<Range<i64>>) -> i64 {
+fn run_ranges_through_maps(maps: &[Vec<(Range<i64>, i64)>], seed_ranges: Vec<Range<i64>>) -> i64 {
     let mut min = i64::MAX;
 
     let mut unmapped = seed_ranges;
