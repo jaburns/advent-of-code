@@ -1,21 +1,31 @@
-use smallvec::{smallvec, SmallVec};
+use arrayvec::ArrayVec;
 use std::{fmt::Write, mem::swap, ops::Range};
 
+const SEEDS_COUNT: usize = 32;
+const SEED_RANGES_COUNT: usize = 128;
+const MAPS_COUNT: usize = 8;
+const MAP_SIZE: usize = 64;
+
 pub fn parts_1_and_2(lines: &[&str], out: &mut String) {
-    let seeds: Vec<i64> = lines[0]
+    let mut seeds = ArrayVec::<i64, SEEDS_COUNT>::new();
+
+    for seed in lines[0]
         .split_once(':')
         .unwrap()
         .1
         .split_whitespace()
-        .map(|x| x.parse().unwrap())
-        .collect();
+        .map(|x| x.parse::<i64>().unwrap())
+    {
+        seeds.push(seed);
+    }
 
-    let seed_ranges_2: Vec<Range<i64>> = seeds
+    let seed_ranges_2 = seeds
         .array_chunks::<2>()
         .map(|&[a, b]| a..(a + b))
-        .collect();
+        .collect::<ArrayVec<Range<i64>, SEED_RANGES_COUNT>>();
 
-    let seed_ranges_1: Vec<Range<i64>> = seeds.into_iter().map(|x| x..(x + 1)).collect();
+    let seed_ranges_1: ArrayVec<Range<i64>, SEED_RANGES_COUNT> =
+        seeds.into_iter().map(|x| x..(x + 1)).collect();
 
     let maps = get_maps(&lines[3..]);
     let result_1 = run_ranges_through_maps(&maps, seed_ranges_1);
@@ -24,13 +34,10 @@ pub fn parts_1_and_2(lines: &[&str], out: &mut String) {
     write!(out, "{}  {}", result_1, result_2).unwrap();
 }
 
-fn get_maps(lines: &[&str]) -> Vec<Vec<(Range<i64>, i64)>> {
-    const MAPS_COUNT: usize = 8;
-    const MAP_SIZE: usize = 64;
-
-    let mut maps = Vec::with_capacity(MAPS_COUNT);
+fn get_maps(lines: &[&str]) -> ArrayVec<ArrayVec<(Range<i64>, i64), MAP_SIZE>, MAPS_COUNT> {
+    let mut maps = ArrayVec::new();
     let mut skip = 0;
-    let mut cur_map = Vec::with_capacity(MAP_SIZE);
+    let mut cur_map = ArrayVec::new();
 
     for line in lines.iter() {
         if skip > 0 {
@@ -40,7 +47,7 @@ fn get_maps(lines: &[&str]) -> Vec<Vec<(Range<i64>, i64)>> {
         if line.is_empty() {
             skip = 1;
             maps.push(cur_map);
-            cur_map = Vec::with_capacity(MAPS_COUNT);
+            cur_map = ArrayVec::new();
             continue;
         }
         let mut chunks = line.split_whitespace();
@@ -55,12 +62,18 @@ fn get_maps(lines: &[&str]) -> Vec<Vec<(Range<i64>, i64)>> {
     maps
 }
 
-fn run_ranges_through_maps(maps: &[Vec<(Range<i64>, i64)>], seed_ranges: Vec<Range<i64>>) -> i64 {
+fn run_ranges_through_maps(
+    maps: &[ArrayVec<(Range<i64>, i64), MAP_SIZE>],
+    seed_ranges: ArrayVec<Range<i64>, SEED_RANGES_COUNT>,
+) -> i64 {
     let mut min = i64::MAX;
 
-    let mut unmapped = seed_ranges;
-    let mut unmapped_new = vec![];
-    let mut mapped = vec![];
+    let mut unmapped_a = seed_ranges;
+    let mut unmapped_b = ArrayVec::<Range<i64>, SEED_RANGES_COUNT>::new();
+    let mut mapped = ArrayVec::<Range<i64>, SEED_RANGES_COUNT>::new();
+
+    let mut unmapped = &mut unmapped_a;
+    let mut unmapped_new = &mut unmapped_b;
 
     for map in maps.iter() {
         loop {
@@ -88,7 +101,9 @@ fn run_ranges_through_maps(maps: &[Vec<(Range<i64>, i64)>], seed_ranges: Vec<Ran
             }
         }
 
-        unmapped.append(&mut mapped);
+        for i in mapped.drain(0..) {
+            unmapped.push(i);
+        }
     }
 
     for range in unmapped {
@@ -100,36 +115,43 @@ fn run_ranges_through_maps(maps: &[Vec<(Range<i64>, i64)>], seed_ranges: Vec<Ran
 
 struct RangeChopResult {
     inside: Option<Range<i64>>,
-    outside: SmallVec<[Range<i64>; 2]>,
+    outside: ArrayVec<Range<i64>, 2>,
 }
 
 fn chop_range(chopper: Range<i64>, targ: Range<i64>) -> RangeChopResult {
+    let mut outside = ArrayVec::new();
+
     if targ.start >= chopper.end || targ.end <= chopper.start {
+        outside.push(targ);
         RangeChopResult {
             inside: None,
-            outside: smallvec![targ],
+            outside,
         }
     } else if targ.start >= chopper.start {
         if targ.end <= chopper.end {
             RangeChopResult {
                 inside: Some(targ),
-                outside: smallvec![],
+                outside,
             }
         } else {
+            outside.push(chopper.end..targ.end);
             RangeChopResult {
                 inside: Some(targ.start..chopper.end),
-                outside: smallvec![chopper.end..targ.end],
+                outside,
             }
         }
     } else if targ.end <= chopper.end {
+        outside.push(targ.start..chopper.start);
         RangeChopResult {
             inside: Some(chopper.start..targ.end),
-            outside: smallvec![targ.start..chopper.start],
+            outside,
         }
     } else {
+        outside.push(targ.start..chopper.start);
+        outside.push(chopper.end..targ.end);
         RangeChopResult {
-            inside: Some(chopper.clone()),
-            outside: smallvec![targ.start..chopper.start, chopper.end..targ.end],
+            inside: Some(chopper),
+            outside,
         }
     }
 }

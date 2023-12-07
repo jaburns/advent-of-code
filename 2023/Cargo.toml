@@ -11,6 +11,7 @@ itertools = "0.12.0"
 smallvec = "1.11.2"
 stats_alloc = "0.1.8"
 regex = "1.10.2"
+arrayvec = "0.7.4"
 
 [profile.release]
 debug = true
