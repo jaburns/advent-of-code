@@ -7,25 +7,23 @@ const MAPS_COUNT: usize = 8;
 const MAP_SIZE: usize = 64;
 
 pub fn parts_1_and_2(lines: &[&str], out: &mut String) {
-    let mut seeds = ArrayVec::<i64, SEEDS_COUNT>::new();
-
-    for seed in lines[0]
+    let seeds = lines[0]
         .split_once(':')
         .unwrap()
         .1
         .split_whitespace()
         .map(|x| x.parse::<i64>().unwrap())
-    {
-        seeds.push(seed);
-    }
+        .collect::<ArrayVec<i64, SEEDS_COUNT>>();
+
+    let seed_ranges_1 = seeds
+        .iter()
+        .map(|&x| x..(x + 1))
+        .collect::<ArrayVec<Range<i64>, SEED_RANGES_COUNT>>();
 
     let seed_ranges_2 = seeds
         .array_chunks::<2>()
         .map(|&[a, b]| a..(a + b))
         .collect::<ArrayVec<Range<i64>, SEED_RANGES_COUNT>>();
-
-    let seed_ranges_1: ArrayVec<Range<i64>, SEED_RANGES_COUNT> =
-        seeds.into_iter().map(|x| x..(x + 1)).collect();
 
     let maps = get_maps(&lines[3..]);
     let result_1 = run_ranges_through_maps(&maps, seed_ranges_1);
@@ -64,16 +62,15 @@ fn get_maps(lines: &[&str]) -> ArrayVec<ArrayVec<(Range<i64>, i64), MAP_SIZE>, M
 
 fn run_ranges_through_maps(
     maps: &[ArrayVec<(Range<i64>, i64), MAP_SIZE>],
-    seed_ranges: ArrayVec<Range<i64>, SEED_RANGES_COUNT>,
+    mut seed_ranges: ArrayVec<Range<i64>, SEED_RANGES_COUNT>,
 ) -> i64 {
     let mut min = i64::MAX;
 
-    let mut unmapped_a = seed_ranges;
-    let mut unmapped_b = ArrayVec::<Range<i64>, SEED_RANGES_COUNT>::new();
+    let mut buffer = ArrayVec::<Range<i64>, SEED_RANGES_COUNT>::new();
     let mut mapped = ArrayVec::<Range<i64>, SEED_RANGES_COUNT>::new();
 
-    let mut unmapped = &mut unmapped_a;
-    let mut unmapped_new = &mut unmapped_b;
+    let mut unmapped = &mut seed_ranges;
+    let mut unmapped_new = &mut buffer;
 
     for map in maps.iter() {
         loop {
@@ -101,9 +98,7 @@ fn run_ranges_through_maps(
             }
         }
 
-        for i in mapped.drain(0..) {
-            unmapped.push(i);
-        }
+        unmapped.extend(mapped.drain(0..));
     }
 
     for range in unmapped {
