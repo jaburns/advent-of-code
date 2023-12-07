@@ -1,8 +1,8 @@
 use itertools::Either;
 use std::fmt::Write;
 
-pub fn part1(lines: &[&str], out: &mut String) {
-    let result: u32 = lines
+pub fn parts_1_and_2(lines: &[&str], out: &mut String) {
+    let result_1: u32 = lines
         .iter()
         .map(|s| {
             let a = s
@@ -22,11 +22,7 @@ pub fn part1(lines: &[&str], out: &mut String) {
         })
         .sum();
 
-    write!(out, "{}", result).unwrap();
-}
-
-pub fn part2(lines: &[&str], out: &mut String) {
-    let result: u32 = lines
+    let result_2: u32 = lines
         .iter()
         .map(|s| {
             let a = find_digit(s, false);
@@ -35,7 +31,7 @@ pub fn part2(lines: &[&str], out: &mut String) {
         })
         .sum();
 
-    write!(out, "{}", result).unwrap();
+    write!(out, "{}  {}", result_1, result_2).unwrap();
 }
 
 fn find_digit(string: &str, reverse: bool) -> u32 {

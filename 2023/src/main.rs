@@ -1,24 +1,21 @@
+#![feature(array_chunks)]
 use std::time::Instant;
 
 mod day1;
 mod day2;
 mod day3;
+mod day4;
+mod day5;
 
 #[global_allocator]
 pub static GLOBAL: &stats_alloc::StatsAlloc<std::alloc::System> = &stats_alloc::INSTRUMENTED_SYSTEM;
 
-type PartFn = fn(&[&str], &mut String);
-
-enum DayFn {
-    Separate(PartFn, PartFn),
-    #[allow(unused)]
-    Combined(PartFn),
-}
-
-static DAY_FUNCS: &[DayFn] = &[
-    DayFn::Separate(day1::part1, day1::part2),
-    DayFn::Separate(day2::part1, day2::part2),
-    DayFn::Combined(day3::parts_1_and_2),
+static DAY_FUNCS: &[fn(&[&str], &mut String)] = &[
+    day1::parts_1_and_2,
+    day2::parts_1_and_2,
+    day3::parts_1_and_2,
+    day4::parts_1_and_2,
+    day5::parts_1_and_2,
 ];
 
 fn main() {
@@ -41,63 +38,21 @@ fn main() {
 
     let mut out_str = String::with_capacity(256);
 
-    match DAY_FUNCS[day - 1] {
-        DayFn::Separate(f1, f2) => {
-            println!();
-            println!("Day {} - Part One", day);
+    println!();
+    println!("Day {} - Parts One and Two", day);
 
-            let reg = stats_alloc::Region::new(GLOBAL);
-            let start_time = Instant::now();
-            f1(&data_lines, &mut out_str);
-            let delta_time = start_time.elapsed();
-            let stats = reg.change();
+    let reg = stats_alloc::Region::new(GLOBAL);
+    let start_time = Instant::now();
+    (DAY_FUNCS[day - 1])(&data_lines, &mut out_str);
+    let delta_time = start_time.elapsed();
+    let stats = reg.change();
 
-            println!("Solution: {}", out_str);
-            println!("Time (μs): {}", delta_time.as_micros());
-            println!(
-                "Memory (bytes): {}",
-                stats.bytes_allocated + stats.bytes_reallocated.max(0) as usize
-            );
-            println!("Allocations: {}", stats.allocations + stats.reallocations);
-
-            out_str.clear();
-
-            println!();
-            println!("Day {} - Part Two", day);
-
-            let reg = stats_alloc::Region::new(GLOBAL);
-            let start_time = Instant::now();
-            f2(&data_lines, &mut out_str);
-            let delta_time = start_time.elapsed();
-            let stats = reg.change();
-
-            println!("Solution: {}", out_str);
-            println!("Time (μs): {}", delta_time.as_micros());
-            println!(
-                "Memory (bytes): {}",
-                stats.bytes_allocated + stats.bytes_reallocated.max(0) as usize
-            );
-            println!("Allocations: {}", stats.allocations + stats.reallocations);
-            println!();
-        }
-        DayFn::Combined(f) => {
-            println!();
-            println!("Day {} - Parts One and Two", day);
-
-            let reg = stats_alloc::Region::new(GLOBAL);
-            let start_time = Instant::now();
-            f(&data_lines, &mut out_str);
-            let delta_time = start_time.elapsed();
-            let stats = reg.change();
-
-            println!("Solution: {}", out_str);
-            println!("Time (μs): {}", delta_time.as_micros());
-            println!(
-                "Memory (bytes): {}",
-                stats.bytes_allocated + stats.bytes_reallocated.max(0) as usize
-            );
-            println!("Allocations: {}", stats.allocations + stats.reallocations);
-            println!();
-        }
-    }
+    println!("Solution: {}", out_str);
+    println!("Time (μs): {}", delta_time.as_micros());
+    println!(
+        "Memory (bytes): {}",
+        stats.bytes_allocated + stats.bytes_reallocated.max(0) as usize
+    );
+    println!("Allocations: {}", stats.allocations + stats.reallocations);
+    println!();
 }

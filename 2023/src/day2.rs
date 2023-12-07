@@ -1,6 +1,21 @@
 use smallvec::{smallvec, SmallVec};
 use std::fmt::Write;
 
+pub fn parts_1_and_2(lines: &[&str], out: &mut String) {
+    let mut result_1 = 0_u32;
+    let mut result_2 = 0_u32;
+
+    for game in lines.iter().cloned().enumerate().map(Game::parse) {
+        let sum = game.max();
+        if sum.red <= 12 && sum.green <= 13 && sum.blue <= 14 {
+            result_1 += game.id;
+        }
+        result_2 += sum.red * sum.green * sum.blue;
+    }
+
+    write!(out, "{}  {}", result_1, result_2).unwrap();
+}
+
 #[derive(Debug)]
 struct Game {
     id: u32,
@@ -50,24 +65,4 @@ impl Game {
         }
         ret
     }
-}
-
-pub fn part1(lines: &[&str], out: &mut String) {
-    let mut result = 0_u32;
-    for game in lines.iter().cloned().enumerate().map(Game::parse) {
-        let sum = game.max();
-        if sum.red <= 12 && sum.green <= 13 && sum.blue <= 14 {
-            result += game.id;
-        }
-    }
-    write!(out, "{}", result).unwrap();
-}
-
-pub fn part2(lines: &[&str], out: &mut String) {
-    let mut result = 0_u32;
-    for game in lines.iter().cloned().enumerate().map(Game::parse) {
-        let sum = game.max();
-        result += sum.red * sum.green * sum.blue;
-    }
-    write!(out, "{}", result).unwrap();
 }
