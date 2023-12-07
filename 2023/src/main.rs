@@ -18,7 +18,7 @@ enum DayFn {
 static DAY_FUNCS: &[DayFn] = &[
     DayFn::Separate(day1::part1, day1::part2),
     DayFn::Separate(day2::part1, day2::part2),
-    DayFn::Separate(day3::part1, day3::part2),
+    DayFn::Combined(day3::parts_1_and_2),
 ];
 
 fn main() {
