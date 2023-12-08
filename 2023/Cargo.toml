@@ -6,13 +6,10 @@ edition = "2018"
 
 [dependencies]
 ahash = { version = "0.8.3", default-features = false }
-derive_more = "0.99.17"
-glam = { version = "0.24.2", features = ["glam-assert"] }
-itertools = "0.12.0"
-smallvec = "1.11.2"
-stats_alloc = "0.1.8"
-regex = "1.10.2"
 arrayvec = "0.7.4"
+glam = "0.24.2"
+itertools = "0.12.0"
+stats_alloc = "0.1.8"
 nix = { version = "0.27.1", features = ["time"] }
 
 [profile.release]
