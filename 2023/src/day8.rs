@@ -3,6 +3,9 @@
 use arrayvec::ArrayVec;
 use std::fmt::Write;
 
+type HashMap<K, V> =
+    std::collections::HashMap<K, V, core::hash::BuildHasherDefault<ahash::AHasher>>;
+
 const IDENT_TABLE_SIZE: usize = 26 * 26 * 26;
 const INSTRUCTIONS_SIZE: usize = 512;
 const LINES_SIZE: usize = 1024;
@@ -53,41 +56,73 @@ pub fn parts_1_and_2(lines: &[&str], out: &mut String) {
         }
     };
 
-    let result_2 = {
-        0
-        // let mut par_pos = par_starts.clone();
-        // let mut ip = 0;
-
-        // loop {
-        //     let right = instructions[ip % instructions.len()];
-        //     ip += 1;
-
-        //     for pos in par_pos.iter_mut() {
-        //         *pos = data[*pos as usize][right as usize];
-        //     }
-
-        //     let mut done = true;
-        //     for pos in par_pos.iter() {
-        //         if !par_ends.contains(pos) {
-        //             done = false;
-        //             break;
-        //         }
-        //     }
-
-        //     if done {
-        //         break ip;
-        //     }
-
-        //     if ip % 10_000_000 == 0 {
-        //         println!("{ip}");
-        //     }
-        // }
-    };
+    let result_2 = par_starts
+        .iter()
+        .map(|start| Loop::find(*start, &data, &instructions, &par_ends).into_lcm_val())
+        .reduce(lcm)
+        .unwrap();
 
     write!(out, "{}  {}", result_1, result_2).unwrap();
+}
+
+#[derive(Debug)]
+struct Loop {
+    start: usize,
+    z: usize,
+    end: usize,
+}
+
+impl Loop {
+    fn find(start: u16, data: &[[u16; 2]], instructions: &[bool], par_ends: &[u16]) -> Self {
+        let mut pos = start;
+        let mut ip = 0;
+        let mut visited = HashMap::default();
+        let mut z = 0;
+
+        loop {
+            let ipm = ip % instructions.len();
+
+            if par_ends.contains(&pos) {
+                z = ip;
+            }
+
+            if let Some(loop_start) = visited.get(&(ipm, pos)) {
+                return Self {
+                    start: *loop_start,
+                    z,
+                    end: ip,
+                };
+            }
+            visited.insert((ipm, pos), ip);
+
+            let right = instructions[ipm];
+            ip += 1;
+            pos = data[pos as usize][right as usize];
+        }
+    }
+
+    fn into_lcm_val(self) -> u64 {
+        // The data is setup such that this is true, which makes the problem solvable by computing LCM.
+        // Once this is known most of the work in Loop::find() isn't really necessary, but oh well.
+        assert_eq!(self.end - self.z, self.start);
+        self.z as u64
+    }
 }
 
 fn ident_to_idx(id: &str) -> usize {
     let bytes = id.as_bytes();
     (bytes[0] as usize - 65) + 26 * (bytes[1] as usize - 65) + 26 * 26 * (bytes[2] as usize - 65)
+}
+
+fn gcd(mut a: u64, mut b: u64) -> u64 {
+    while b != 0 {
+        let t = b;
+        b = a % b;
+        a = t;
+    }
+    a
+}
+
+fn lcm(a: u64, b: u64) -> u64 {
+    a / gcd(a, b) * b
 }
