@@ -11,6 +11,10 @@ const INSTRUCTIONS_SIZE: usize = 512;
 const LINES_SIZE: usize = 1024;
 const PARALLEL_SIZE: usize = 8;
 
+const RUN_VALIDATION: bool = false;
+
+type Part2Fn = fn(u16, &[[u16; 2]], &[bool], &[u16]) -> u64;
+
 pub fn parts_1_and_2(lines: &[&str], out: &mut String) {
     let instructions = lines[0]
         .chars()
@@ -56,9 +60,15 @@ pub fn parts_1_and_2(lines: &[&str], out: &mut String) {
         }
     };
 
+    const PART_2_FN: Part2Fn = if RUN_VALIDATION {
+        validate_loop_and_find_length
+    } else {
+        assume_valid_loop_find_length
+    };
+
     let result_2 = par_starts
         .iter()
-        .map(|start| validate_loop_and_find_length(*start, &data, &instructions, &par_ends))
+        .map(|start| PART_2_FN(*start, &data, &instructions, &par_ends))
         .reduce(lcm)
         .unwrap();
 
@@ -94,6 +104,26 @@ fn validate_loop_and_find_length(
         let right = instructions[ipm];
         ip += 1;
         pos = data[pos as usize][right as usize];
+    }
+}
+
+fn assume_valid_loop_find_length(
+    start: u16,
+    data: &[[u16; 2]],
+    instructions: &[bool],
+    par_ends: &[u16],
+) -> u64 {
+    let mut pos = start;
+    let mut ip = 0;
+
+    loop {
+        let right = instructions[ip % instructions.len()];
+        ip += 1;
+
+        pos = data[pos as usize][right as usize];
+        if par_ends.contains(&pos) {
+            break ip as u64;
+        }
     }
 }
 
