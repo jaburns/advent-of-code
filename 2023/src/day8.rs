@@ -58,54 +58,42 @@ pub fn parts_1_and_2(lines: &[&str], out: &mut String) {
 
     let result_2 = par_starts
         .iter()
-        .map(|start| Loop::find(*start, &data, &instructions, &par_ends).into_lcm_val())
+        .map(|start| validate_loop_and_find_length(*start, &data, &instructions, &par_ends))
         .reduce(lcm)
         .unwrap();
 
     write!(out, "{}  {}", result_1, result_2).unwrap();
 }
 
-#[derive(Debug)]
-struct Loop {
-    start: usize,
-    z: usize,
-    end: usize,
-}
+fn validate_loop_and_find_length(
+    start: u16,
+    data: &[[u16; 2]],
+    instructions: &[bool],
+    par_ends: &[u16],
+) -> u64 {
+    let mut pos = start;
+    let mut ip = 0;
+    let mut visited = HashMap::default();
+    let mut z = 0;
 
-impl Loop {
-    fn find(start: u16, data: &[[u16; 2]], instructions: &[bool], par_ends: &[u16]) -> Self {
-        let mut pos = start;
-        let mut ip = 0;
-        let mut visited = HashMap::default();
-        let mut z = 0;
+    loop {
+        let ipm = ip % instructions.len();
 
-        loop {
-            let ipm = ip % instructions.len();
-
-            if par_ends.contains(&pos) {
-                z = ip;
-            }
-
-            if let Some(loop_start) = visited.get(&(ipm, pos)) {
-                return Self {
-                    start: *loop_start,
-                    z,
-                    end: ip,
-                };
-            }
-            visited.insert((ipm, pos), ip);
-
-            let right = instructions[ipm];
-            ip += 1;
-            pos = data[pos as usize][right as usize];
+        if par_ends.contains(&pos) {
+            z = ip;
         }
-    }
 
-    fn into_lcm_val(self) -> u64 {
-        // The data is setup such that this is true, which makes the problem solvable by computing LCM.
-        // Once this is known most of the work in Loop::find() isn't really necessary, but oh well.
-        assert_eq!(self.end - self.z, self.start);
-        self.z as u64
+        if let Some(loop_start) = visited.get(&(ipm, pos)) {
+            // The data is setup such that this is true, which makes the problem solvable by computing LCM.
+            // Once this is known most of the work in Loop::find() isn't really necessary, but oh well.
+            assert_eq!(ip - z, *loop_start);
+            return z as u64;
+        }
+        visited.insert((ipm, pos), ip);
+
+        let right = instructions[ipm];
+        ip += 1;
+        pos = data[pos as usize][right as usize];
     }
 }
 
