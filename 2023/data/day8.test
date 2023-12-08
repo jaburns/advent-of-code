@@ -1,0 +1,12 @@
+LR
+
+JJA = (JJB, XXX)
+JJB = (XXX, JJZ)
+JJZ = (JJB, XXX)
+QQA = (QQB, XXX)
+QQB = (QQC, QQC)
+QQC = (QQZ, QQZ)
+QQZ = (QQB, QQB)
+XXX = (XXX, XXX)
+AAA = (ZZZ, ZZZ)
+ZZZ = (ZZZ, ZZZ)

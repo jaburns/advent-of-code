@@ -1,6 +1,9 @@
 use glam::{ivec2, IVec2};
 use smallvec::SmallVec;
-use std::{collections::HashMap, fmt::Write};
+use std::fmt::Write;
+
+type HashMap<K, V> =
+    std::collections::HashMap<K, V, core::hash::BuildHasherDefault<ahash::AHasher>>;
 
 pub fn parts_1_and_2(lines: &[&str], out: &mut String) {
     let mut sum = 0_u64;

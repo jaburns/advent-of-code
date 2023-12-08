@@ -5,6 +5,7 @@ authors = ["Jeremy Burns <j@jaburns.net>"]
 edition = "2018"
 
 [dependencies]
+ahash = { version = "0.8.3", default-features = false }
 derive_more = "0.99.17"
 glam = { version = "0.24.2", features = ["glam-assert"] }
 itertools = "0.12.0"

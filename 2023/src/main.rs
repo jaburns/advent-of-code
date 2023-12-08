@@ -9,6 +9,7 @@ mod day4;
 mod day5;
 mod day6;
 mod day7;
+mod day8;
 
 #[global_allocator]
 pub static GLOBAL: &stats_alloc::StatsAlloc<std::alloc::System> = &stats_alloc::INSTRUMENTED_SYSTEM;
@@ -21,6 +22,7 @@ static DAY_FUNCS: &[fn(&[&str], &mut String)] = &[
     day5::parts_1_and_2,
     day6::parts_1_and_2,
     day7::parts_1_and_2,
+    day8::parts_1_and_2,
 ];
 
 fn main() {
