@@ -95,7 +95,6 @@ fn validate_loop_and_find_length(
 
         if let Some(loop_start) = visited.get(&(ipm, pos)) {
             // The data is setup such that this is true, which makes the problem solvable by computing LCM.
-            // Once this is known most of the work in Loop::find() isn't really necessary, but oh well.
             assert_eq!(ip - z, *loop_start);
             return z as u64;
         }
