@@ -1,4 +1,4 @@
-use smallvec::{smallvec, SmallVec};
+use arrayvec::ArrayVec;
 use std::fmt::Write;
 
 pub fn parts_1_and_2(lines: &[&str], out: &mut String) {
@@ -19,7 +19,7 @@ pub fn parts_1_and_2(lines: &[&str], out: &mut String) {
 #[derive(Debug)]
 struct Game {
     id: u32,
-    samples: SmallVec<[Sample; 16]>,
+    samples: ArrayVec<Sample, 16>,
 }
 
 #[derive(Copy, Clone, Debug, Default)]
@@ -31,7 +31,7 @@ struct Sample {
 
 impl Game {
     fn parse((idx, line): (usize, &str)) -> Game {
-        let mut samples = smallvec![];
+        let mut samples = ArrayVec::new();
 
         let after_color = &line[(line.find(':').unwrap() + 1)..];
         for sample in after_color.split(';').map(|x| x.trim()) {

@@ -1,4 +1,4 @@
-#![feature(array_chunks)]
+#![feature(array_chunks, array_windows, iter_collect_into)]
 
 use nix::time::{clock_gettime, ClockId};
 
@@ -10,6 +10,7 @@ mod day5;
 mod day6;
 mod day7;
 mod day8;
+mod day9;
 
 #[global_allocator]
 pub static GLOBAL: &stats_alloc::StatsAlloc<std::alloc::System> = &stats_alloc::INSTRUMENTED_SYSTEM;
@@ -23,6 +24,7 @@ static DAY_FUNCS: &[fn(&[&str], &mut String)] = &[
     day6::parts_1_and_2,
     day7::parts_1_and_2,
     day8::parts_1_and_2,
+    day9::parts_1_and_2,
 ];
 
 fn main() {
