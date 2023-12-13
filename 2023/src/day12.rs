@@ -1,89 +1,103 @@
 use arrayvec::ArrayVec;
 use std::fmt::Write;
 
-const MAX_GROUPS: usize = 8;
+const MAX_GROUPS: usize = 64;
 
 #[derive(Debug)]
-struct Entry {
-    operational_mask: u32,
-    broken_mask: u32,
-    groups: ArrayVec<u8, MAX_GROUPS>,
-    size: u8,
-}
+struct Entry {}
 
 pub fn parts_1_and_2(lines: &[&str], out: &mut String) {
     let mut result_0 = 0;
-    let result_1 = 0;
+    let mut result_1 = 0;
 
     for line in lines {
         let mut halves = line.split_whitespace();
 
-        let mut operational_mask: u32 = 0;
-        let mut broken_mask: u32 = 0;
-        let mut mask: u32 = 1;
-        let mut size: u8 = 0;
+        let mut operational_mask_0: u128 = 0;
+        let mut operational_mask_1: u128 = 0;
+        let mut broken_mask_0: u128 = 0;
+        let mut broken_mask_1: u128 = 0;
+        let mut mask: u128 = 1;
 
-        for ch in halves.next().unwrap().chars() {
+        let pattern = halves.next().unwrap();
+        let size = pattern.len();
+
+        for ch in pattern.chars() {
             if ch == '.' {
-                operational_mask |= mask;
+                operational_mask_0 |= mask;
+                operational_mask_1 |= mask;
             } else if ch == '#' {
-                broken_mask |= mask;
+                broken_mask_0 |= mask;
+                broken_mask_1 |= mask;
             }
             mask <<= 1;
-            size += 1;
+        }
+        for _ in 0..4 {
+            for ch in pattern.chars() {
+                if ch == '.' {
+                    operational_mask_1 |= mask;
+                } else if ch == '#' {
+                    broken_mask_1 |= mask;
+                }
+                mask <<= 1;
+            }
         }
 
-        let groups = halves
-            .next()
-            .unwrap()
-            .split(',')
-            .map(|x| x.parse::<u8>().unwrap())
-            .collect::<ArrayVec<u8, MAX_GROUPS>>();
+        let digits = halves.next().unwrap();
 
-        result_0 += count_arrangements(Entry {
-            operational_mask,
-            broken_mask,
-            groups,
-            size,
-        });
+        let groups_0 = digits
+            .split(',')
+            .map(|x| x.parse::<usize>().unwrap())
+            .collect::<ArrayVec<usize, MAX_GROUPS>>();
+
+        result_0 += count_arrangements(operational_mask_0, broken_mask_0, &groups_0, size);
+
+        let mut groups_1 = ArrayVec::<usize, MAX_GROUPS>::new();
+        for _ in 0..5 {
+            groups_1.extend(groups_0.iter().cloned());
+        }
+
+        println!(
+            "{:b} {:b} {:?}",
+            operational_mask_1, broken_mask_1, groups_1
+        );
+
+        result_1 += count_arrangements(operational_mask_1, broken_mask_1, &groups_1, size);
     }
 
     write!(out, "{}  {}", result_0, result_1).unwrap();
 }
 
-fn count_arrangements(entry: Entry) -> u32 {
-    let gaps = entry.size + 1 - entry.groups.iter().map(|x| *x + 1).sum::<u8>();
+fn count_arrangements(
+    operational_mask: u128,
+    broken_mask: u128,
+    groups: &[usize],
+    size: usize,
+) -> usize {
+    let gaps = size + 1 - groups.iter().map(|x| *x + 1).sum::<usize>();
     let mut count = 0;
 
-    iter_gap_distributions(
-        gaps,
-        entry.groups.len() + 1,
-        &mut ArrayVec::new(),
-        &mut |dist| {
-            let mut offset = 0_u32;
-            let mut mask = 0_u32;
-            for (&g, &gap) in entry.groups.iter().zip(dist) {
-                let group_bits = ((1_u32 << g) - 1) << (offset + gap as u32);
-                offset += g as u32 + 1 + gap as u32;
-                mask |= group_bits;
-            }
-
-            if entry.broken_mask & mask == entry.broken_mask
-                && entry.operational_mask & !mask == entry.operational_mask
-            {
-                count += 1;
-            }
-        },
-    );
+    iter_gap_distributions(gaps, groups.len() + 1, &mut ArrayVec::new(), &mut |dist| {
+        let mut offset = 0_u128;
+        let mut mask = 0_u128;
+        for (&g, &gap) in groups.iter().zip(dist) {
+            let group_bits = ((1_u128 << g) - 1) << (offset + gap as u128);
+            offset += g as u128 + 1 + gap as u128;
+            mask |= group_bits;
+        }
+        if broken_mask & mask == broken_mask && operational_mask & !mask == operational_mask {
+            count += 1;
+        }
+    });
 
     count
 }
 
 fn iter_gap_distributions(
-    gaps: u8,
+    gaps: usize,
     gap_count: usize,
-    scratch: &mut ArrayVec<u8, MAX_GROUPS>,
-    f: &mut impl FnMut(&[u8]),
+    scratch: &mut ArrayVec<usize, MAX_GROUPS>,
+    f: &mut impl FnMut(&[usize]),
 ) {
     if gap_count == 1 {
         scratch.push(gaps);
