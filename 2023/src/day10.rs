@@ -70,7 +70,9 @@ fn part_1(grid: &mut Grid, animal_pos: IVec2) -> u32 {
             break;
         }
         let target_flags = &mut grid[pos.y as usize][pos.x as usize];
-        let out_flag = *target_flags & !from;
+        *target_flags |= FLAG_ON_LOOP;
+
+        let out_flag = *target_flags & !from & !FLAG_ON_LOOP;
         if out_flag == FLAG_LEFT {
             pos.x -= 1;
             from = FLAG_RIGHT;
@@ -84,7 +86,6 @@ fn part_1(grid: &mut Grid, animal_pos: IVec2) -> u32 {
             pos.y += 1;
             from = FLAG_UP;
         }
-        *target_flags |= FLAG_ON_LOOP;
         counter += 1;
     }
 
