@@ -13,4 +13,5 @@ stats_alloc = "0.1.8"
 nix = { version = "0.27.1", features = ["time"] }
 
 [profile.release]
+lto = true
 debug = true
