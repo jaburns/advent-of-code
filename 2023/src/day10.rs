@@ -15,11 +15,11 @@ pub fn parts_1_and_2(lines: &[&str], out: &mut String) {
     let mut grid: Grid = unsafe { zeroed() };
 
     let mut animal_pos = ivec2(0, 0);
-    for (y, line) in lines.iter().enumerate() {
-        for (x, chr) in line.chars().enumerate() {
-            grid[x][y] = match chr {
+    for (row, line) in lines.iter().enumerate() {
+        for (col, chr) in line.chars().enumerate() {
+            grid[row][col] = match chr {
                 'S' => {
-                    animal_pos = ivec2(x as i32, y as i32);
+                    animal_pos = ivec2(col as i32, row as i32);
                     FLAG_ON_LOOP
                 }
                 'F' => FLAG_DOWN | FLAG_RIGHT,
@@ -55,8 +55,8 @@ fn part_1(grid: &mut Grid, animal_pos: IVec2) -> u32 {
         if p.x >= GRID_SIZE as i32 || p.y >= GRID_SIZE as i32 || p.x < 0 || p.y < 0 {
             continue;
         }
-        if grid[p.x as usize][p.y as usize] & init_from != 0 {
-            grid[animal_pos.x as usize][animal_pos.y as usize] |= animal_flag;
+        if grid[p.y as usize][p.x as usize] & init_from != 0 {
+            grid[animal_pos.y as usize][animal_pos.x as usize] |= animal_flag;
             pos = p;
             from = init_from;
             counter += 1;
@@ -66,10 +66,10 @@ fn part_1(grid: &mut Grid, animal_pos: IVec2) -> u32 {
 
     loop {
         if pos == animal_pos {
-            grid[animal_pos.x as usize][animal_pos.y as usize] |= from;
+            grid[animal_pos.y as usize][animal_pos.x as usize] |= from;
             break;
         }
-        let target_flags = &mut grid[pos.x as usize][pos.y as usize];
+        let target_flags = &mut grid[pos.y as usize][pos.x as usize];
         let out_flag = *target_flags & !from;
         if out_flag == FLAG_LEFT {
             pos.x -= 1;
@@ -94,28 +94,28 @@ fn part_1(grid: &mut Grid, animal_pos: IVec2) -> u32 {
 #[rustfmt::skip]
 fn part_2(grid: &Grid) -> u32 {
     let mut inside = false;
-    let mut edge_from_left = false;
-    let mut edge_from_right = false;
+    let mut edge_from_top = false;
+    let mut edge_from_bottom = false;
     let mut count = 0;
 
-    for grid_x in grid.iter() {
-        for cell in grid_x.iter() {
+    for row in grid.iter() {
+        for cell in row.iter() {
             if cell & (FLAG_DOWN | FLAG_RIGHT | FLAG_ON_LOOP) == FLAG_DOWN | FLAG_RIGHT | FLAG_ON_LOOP {
-                edge_from_right = true;
+                edge_from_bottom = true;
             } else if cell & (FLAG_DOWN | FLAG_UP | FLAG_ON_LOOP) == FLAG_DOWN | FLAG_UP | FLAG_ON_LOOP {
-                // noop
-            } else if cell & (FLAG_DOWN | FLAG_LEFT | FLAG_ON_LOOP) == FLAG_DOWN | FLAG_LEFT | FLAG_ON_LOOP {
-                edge_from_left = true;
-            } else if cell & (FLAG_UP | FLAG_RIGHT | FLAG_ON_LOOP) == FLAG_UP | FLAG_RIGHT | FLAG_ON_LOOP {
-                inside ^= edge_from_left;
-                edge_from_left = false;
-                edge_from_right = false;
-            } else if cell & (FLAG_UP | FLAG_LEFT | FLAG_ON_LOOP) == FLAG_UP | FLAG_LEFT | FLAG_ON_LOOP {
-                inside ^= edge_from_right;
-                edge_from_left = false;
-                edge_from_right = false;
-            } else if cell & (FLAG_RIGHT | FLAG_LEFT | FLAG_ON_LOOP) == FLAG_RIGHT | FLAG_LEFT | FLAG_ON_LOOP {
                 inside = !inside;
+            } else if cell & (FLAG_DOWN | FLAG_LEFT | FLAG_ON_LOOP) == FLAG_DOWN | FLAG_LEFT | FLAG_ON_LOOP {
+                inside ^= edge_from_top;
+                edge_from_top = false;
+                edge_from_bottom = false;
+            } else if cell & (FLAG_UP | FLAG_RIGHT | FLAG_ON_LOOP) == FLAG_UP | FLAG_RIGHT | FLAG_ON_LOOP {
+                edge_from_top = true;
+            } else if cell & (FLAG_UP | FLAG_LEFT | FLAG_ON_LOOP) == FLAG_UP | FLAG_LEFT | FLAG_ON_LOOP {
+                inside ^= edge_from_bottom;
+                edge_from_top = false;
+                edge_from_bottom = false;
+            } else if cell & (FLAG_RIGHT | FLAG_LEFT | FLAG_ON_LOOP) == FLAG_RIGHT | FLAG_LEFT | FLAG_ON_LOOP {
+                // noop
             } else if inside {
                 count += 1;
             }
