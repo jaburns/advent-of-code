@@ -1,8 +1,10 @@
 #![feature(array_chunks, array_windows, iter_collect_into)]
+#![allow(clippy::char_lit_as_u8)]
 
 use nix::time::{clock_gettime, ClockId};
 
 mod day1;
+mod day10;
 mod day2;
 mod day3;
 mod day4;
@@ -25,6 +27,7 @@ static DAY_FUNCS: &[fn(&[&str], &mut String)] = &[
     day7::parts_1_and_2,
     day8::parts_1_and_2,
     day9::parts_1_and_2,
+    day10::parts_1_and_2,
 ];
 
 fn main() {

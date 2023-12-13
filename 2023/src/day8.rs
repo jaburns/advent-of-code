@@ -1,5 +1,3 @@
-#![allow(clippy::char_lit_as_u8)]
-
 use arrayvec::ArrayVec;
 use std::fmt::Write;
 

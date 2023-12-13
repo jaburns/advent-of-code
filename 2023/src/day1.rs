@@ -46,7 +46,6 @@ fn find_digit(string: &str, reverse: bool) -> u32 {
     for i in range {
         let x = string.as_bytes()[i];
         if x.is_ascii_digit() {
-            #[allow(clippy::char_lit_as_u8)]
             return (x - ('0' as u8)) as u32;
         }
         for (dig, digit) in DIGITS.iter().enumerate() {

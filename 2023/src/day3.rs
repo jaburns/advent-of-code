@@ -34,9 +34,7 @@ pub fn parts_1_and_2(lines: &[&str], out: &mut String) {
     write!(out, "{}  {}", sum, gears.sum).unwrap();
 }
 
-#[allow(clippy::char_lit_as_u8)]
 const DOT: u8 = '.' as u8;
-#[allow(clippy::char_lit_as_u8)]
 const GEAR: u8 = '*' as u8;
 
 fn sum_part_numbers(line_idx: i32, line: &str, prev: &str, next: &str, gears: &mut Gears) -> u64 {
