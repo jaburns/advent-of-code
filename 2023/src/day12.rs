@@ -1,7 +1,7 @@
 use arrayvec::ArrayVec;
 use std::{fmt::Write, mem::zeroed};
 
-const ENABLE_PARALLELISM: bool = false;
+const ENABLE_PARALLELISM: bool = true;
 const PRINT_PROGRESS: bool = false;
 
 const MAX_SLOTS: usize = 128;
@@ -163,14 +163,6 @@ fn go(count: &mut usize, entry: &Entry, mut state: State) {
             let group = entry.groups[state.group_idx];
             let check_offset = if end_kind == Slot::Full { 1 } else { 0 };
 
-            // If the block of ?s is smaller than the next group, try both stepping
-            // forwards by one and placing the next group.
-            if unknown_size - check_offset < group as usize {
-                step_one_empty(count, entry, state.clone());
-                step_group(count, entry, state);
-                return;
-            }
-
             // Try skipping the whole block placing no groups.
             {
                 let mut state = state.clone();
@@ -179,9 +171,10 @@ fn go(count: &mut usize, entry: &Entry, mut state: State) {
             }
 
             // Calculate the number of ways to lay down the amount of groups that fit
-            // if the block ends in an empty space. If it doesn't end in an empty space,
+            // if the block ends in an empty space AND there's enough room to put at least
+            // the next available group in here. If the block doesn't end in an empty space,
             // assume the last '?' is a '.'.
-            {
+            if unknown_size - check_offset >= group as usize {
                 let mut state = state.clone();
                 let mut unknown_size_left = unknown_size - group as usize - check_offset;
                 let mut buckets = 2;
@@ -223,7 +216,7 @@ fn go(count: &mut usize, entry: &Entry, mut state: State) {
                         }
                     }
 
-                    for from_end in 1..(end_group.min(unknown_size)) {
+                    for from_end in 1..=(end_group.min(unknown_size)) {
                         let mut ways = 1;
 
                         if group_count > 1 {
