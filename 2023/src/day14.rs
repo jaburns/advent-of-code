@@ -72,7 +72,7 @@ pub fn parts_1_and_2(lines: &[&str], out: &mut String) {
 
 fn grid_step(grid: &mut Grid, mode: u32) -> bool {
     macro_rules! get {
-        [$grid: expr; $row: expr, $col: expr] => {
+        [$row: expr, $col: expr] => {
             unsafe { grid.get_unchecked_mut($row).get_unchecked_mut($col) }
         }
     }
@@ -85,11 +85,11 @@ fn grid_step(grid: &mut Grid, mode: u32) -> bool {
         0 => {
             for row_idx in 0..(row_count - 1) {
                 for col_idx in 0..col_count {
-                    if *get![grid; row_idx, col_idx] == Cell::Empty
-                        && *get![grid; row_idx + 1, col_idx] == Cell::Round
+                    if *get![row_idx, col_idx] == Cell::Empty
+                        && *get![row_idx + 1, col_idx] == Cell::Round
                     {
-                        *get![grid; row_idx, col_idx] = Cell::Round;
-                        *get![grid; row_idx + 1, col_idx] = Cell::Empty;
+                        *get![row_idx, col_idx] = Cell::Round;
+                        *get![row_idx + 1, col_idx] = Cell::Empty;
                         changed = true;
                     }
                 }
@@ -98,11 +98,11 @@ fn grid_step(grid: &mut Grid, mode: u32) -> bool {
         1 => {
             for col_idx in 0..(col_count - 1) {
                 for row_idx in 0..row_count {
-                    if *get![grid; row_idx, col_idx] == Cell::Empty
-                        && *get![grid; row_idx, col_idx + 1] == Cell::Round
+                    if *get![row_idx, col_idx] == Cell::Empty
+                        && *get![row_idx, col_idx + 1] == Cell::Round
                     {
-                        *get![grid; row_idx, col_idx] = Cell::Round;
-                        *get![grid; row_idx, col_idx + 1] = Cell::Empty;
+                        *get![row_idx, col_idx] = Cell::Round;
+                        *get![row_idx, col_idx + 1] = Cell::Empty;
                         changed = true;
                     }
                 }
@@ -111,11 +111,11 @@ fn grid_step(grid: &mut Grid, mode: u32) -> bool {
         2 => {
             for row_idx in (1..row_count).rev() {
                 for col_idx in 0..col_count {
-                    if *get![grid; row_idx, col_idx] == Cell::Empty
-                        && *get![grid; row_idx - 1, col_idx] == Cell::Round
+                    if *get![row_idx, col_idx] == Cell::Empty
+                        && *get![row_idx - 1, col_idx] == Cell::Round
                     {
-                        *get![grid; row_idx, col_idx] = Cell::Round;
-                        *get![grid; row_idx - 1, col_idx] = Cell::Empty;
+                        *get![row_idx, col_idx] = Cell::Round;
+                        *get![row_idx - 1, col_idx] = Cell::Empty;
                         changed = true;
                     }
                 }
@@ -124,11 +124,11 @@ fn grid_step(grid: &mut Grid, mode: u32) -> bool {
         3 => {
             for col_idx in (1..col_count).rev() {
                 for row_idx in 0..row_count {
-                    if *get![grid; row_idx, col_idx] == Cell::Empty
-                        && *get![grid; row_idx, col_idx - 1] == Cell::Round
+                    if *get![row_idx, col_idx] == Cell::Empty
+                        && *get![row_idx, col_idx - 1] == Cell::Round
                     {
-                        *get![grid; row_idx, col_idx] = Cell::Round;
-                        *get![grid; row_idx, col_idx - 1] = Cell::Empty;
+                        *get![row_idx, col_idx] = Cell::Round;
+                        *get![row_idx, col_idx - 1] = Cell::Empty;
                         changed = true;
                     }
                 }
