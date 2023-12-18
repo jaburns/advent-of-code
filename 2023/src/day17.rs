@@ -18,9 +18,9 @@ pub fn parts_1_and_2(lines: &[&str], out: &mut String) {
         }
     }
 
-    let result_0 = search(&mut grid, grid_size, get_neighbors_0);
+    let result_0 = search(&mut grid, grid_size, get_neighbors::<0, 3>);
     grid.clear();
-    let result_1 = search(&mut grid, grid_size, get_neighbors_1);
+    let result_1 = search(&mut grid, grid_size, get_neighbors::<4, 10>);
 
     write!(out, "{}  {}", result_0, result_1).unwrap();
 }
@@ -156,68 +156,20 @@ fn search(grid: &mut Grid, grid_size: usize, get_neighbors: NeighborGetter) -> u
     panic!()
 }
 
-fn get_neighbors_0(coord: Coord, max_coord: u8) -> ArrayVec<Coord, 3> {
+fn get_neighbors<const MIN_STEPS: u8, const MAX_STEPS: u8>(
+    coord: Coord,
+    max_coord: u8,
+) -> ArrayVec<Coord, 3> {
     let mut ret = ArrayVec::new();
     match coord.2 {
         ArrivedFrom::Left(x) => {
-            if coord.1 < max_coord && x < 3 {
-                ret.push(Coord(coord.0, coord.1 + 1, ArrivedFrom::Left(x + 1)));
-            }
-            if coord.0 > 0 {
-                ret.push(Coord(coord.0 - 1, coord.1, ArrivedFrom::Bottom(1)));
-            }
-            if coord.0 < max_coord {
-                ret.push(Coord(coord.0 + 1, coord.1, ArrivedFrom::Top(1)));
-            }
-        }
-        ArrivedFrom::Right(x) => {
-            if coord.1 > 0 && x < 3 {
-                ret.push(Coord(coord.0, coord.1 - 1, ArrivedFrom::Right(x + 1)));
-            }
-            if coord.0 > 0 {
-                ret.push(Coord(coord.0 - 1, coord.1, ArrivedFrom::Bottom(1)));
-            }
-            if coord.0 < max_coord {
-                ret.push(Coord(coord.0 + 1, coord.1, ArrivedFrom::Top(1)));
-            }
-        }
-        ArrivedFrom::Top(x) => {
-            if coord.0 < max_coord && x < 3 {
-                ret.push(Coord(coord.0 + 1, coord.1, ArrivedFrom::Top(x + 1)));
-            }
-            if coord.1 > 0 {
-                ret.push(Coord(coord.0, coord.1 - 1, ArrivedFrom::Right(1)));
-            }
-            if coord.1 < max_coord {
-                ret.push(Coord(coord.0, coord.1 + 1, ArrivedFrom::Left(1)));
-            }
-        }
-        ArrivedFrom::Bottom(x) => {
-            if coord.0 > 0 && x < 3 {
-                ret.push(Coord(coord.0 - 1, coord.1, ArrivedFrom::Bottom(x + 1)));
-            }
-            if coord.1 > 0 {
-                ret.push(Coord(coord.0, coord.1 - 1, ArrivedFrom::Right(1)));
-            }
-            if coord.1 < max_coord {
-                ret.push(Coord(coord.0, coord.1 + 1, ArrivedFrom::Left(1)));
-            }
-        }
-    }
-    ret
-}
-
-fn get_neighbors_1(coord: Coord, max_coord: u8) -> ArrayVec<Coord, 3> {
-    let mut ret = ArrayVec::new();
-    match coord.2 {
-        ArrivedFrom::Left(x) => {
-            if x < 4 {
+            if x < MIN_STEPS {
                 if coord.1 < max_coord {
                     ret.push(Coord(coord.0, coord.1 + 1, ArrivedFrom::Left(x + 1)));
                 }
                 return ret;
             }
-            if coord.1 < max_coord && x < 10 {
+            if coord.1 < max_coord && x < MAX_STEPS {
                 ret.push(Coord(coord.0, coord.1 + 1, ArrivedFrom::Left(x + 1)));
             }
             if coord.0 > 0 {
@@ -228,13 +180,13 @@ fn get_neighbors_1(coord: Coord, max_coord: u8) -> ArrayVec<Coord, 3> {
             }
         }
         ArrivedFrom::Right(x) => {
-            if x < 4 {
+            if x < MIN_STEPS {
                 if coord.1 > 0 {
                     ret.push(Coord(coord.0, coord.1 - 1, ArrivedFrom::Right(x + 1)));
                 }
                 return ret;
             }
-            if coord.1 > 0 && x < 10 {
+            if coord.1 > 0 && x < MAX_STEPS {
                 ret.push(Coord(coord.0, coord.1 - 1, ArrivedFrom::Right(x + 1)));
             }
             if coord.0 > 0 {
@@ -245,13 +197,13 @@ fn get_neighbors_1(coord: Coord, max_coord: u8) -> ArrayVec<Coord, 3> {
             }
         }
         ArrivedFrom::Top(x) => {
-            if x < 4 {
+            if x < MIN_STEPS {
                 if coord.0 < max_coord {
                     ret.push(Coord(coord.0 + 1, coord.1, ArrivedFrom::Top(x + 1)));
                 }
                 return ret;
             }
-            if coord.0 < max_coord && x < 10 {
+            if coord.0 < max_coord && x < MAX_STEPS {
                 ret.push(Coord(coord.0 + 1, coord.1, ArrivedFrom::Top(x + 1)));
             }
             if coord.1 > 0 {
@@ -262,13 +214,13 @@ fn get_neighbors_1(coord: Coord, max_coord: u8) -> ArrayVec<Coord, 3> {
             }
         }
         ArrivedFrom::Bottom(x) => {
-            if x < 4 {
+            if x < MIN_STEPS {
                 if coord.0 > 0 {
                     ret.push(Coord(coord.0 - 1, coord.1, ArrivedFrom::Bottom(x + 1)));
                 }
                 return ret;
             }
-            if coord.0 > 0 && x < 10 {
+            if coord.0 > 0 && x < MAX_STEPS {
                 ret.push(Coord(coord.0 - 1, coord.1, ArrivedFrom::Bottom(x + 1)));
             }
             if coord.1 > 0 {
