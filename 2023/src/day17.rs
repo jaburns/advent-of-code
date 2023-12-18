@@ -18,9 +18,11 @@ pub fn parts_1_and_2(lines: &[&str], out: &mut String) {
         }
     }
 
-    let result_0 = search(&mut grid, grid_size, get_neighbors::<0, 3>);
+    let (result_0, _from_0) = search(&mut grid, grid_size, get_neighbors::<0, 3>);
+    // grid.print(_from_0);
     grid.clear();
-    let result_1 = search(&mut grid, grid_size, get_neighbors::<4, 10>);
+    let (result_1, _from_1) = search(&mut grid, grid_size, get_neighbors::<4, 10>);
+    // grid.print(_from_1);
 
     write!(out, "{}  {}", result_0, result_1).unwrap();
 }
@@ -32,7 +34,14 @@ struct Coord(u8, u8, ArrivedFrom);
 struct Cell {
     cost: u8,
     cost_so_far: u32,
+    // from: Coord,
     reached: bool,
+}
+
+impl Default for Coord {
+    fn default() -> Self {
+        Self(0, 0, ArrivedFrom::Left(1))
+    }
 }
 
 #[allow(unused)]
@@ -81,6 +90,24 @@ impl Grid {
             item.reached = false;
         }
     }
+    // fn print(&self, arrived_from: ArrivedFrom) {
+    //     let mut lines = vec![];
+    //     for _ in 0..self.size {
+    //         lines.push(".".repeat(self.size));
+    //     }
+    //     let mut coord = Coord(self.size as u8 - 1, self.size as u8 - 1, arrived_from);
+    //     loop {
+    //         if coord.0 == 0 && coord.1 == 0 {
+    //             break;
+    //         }
+    //         let cell = self.get(coord.0 as usize, coord.1 as usize, coord.2.to_idx());
+    //         coord = cell.from;
+    //         lines[coord.0 as usize].replace_range((coord.1 as usize..(coord.1 as usize + 1)), "X");
+    //     }
+    //     for line in lines {
+    //         println!("{}", line);
+    //     }
+    // }
 }
 
 struct FrontierItem {
@@ -104,7 +131,7 @@ impl PartialOrd for FrontierItem {
     }
 }
 
-fn search(grid: &mut Grid, grid_size: usize, get_neighbors: NeighborGetter) -> u32 {
+fn search(grid: &mut Grid, grid_size: usize, get_neighbors: NeighborGetter) -> (u32, ArrivedFrom) {
     let max_coord = grid_size as u8 - 1;
 
     let mut frontier = BinaryHeap::<FrontierItem>::new();
@@ -124,7 +151,7 @@ fn search(grid: &mut Grid, grid_size: usize, get_neighbors: NeighborGetter) -> u
 
     while let Some(cur) = frontier.pop() {
         if cur.coord.0 == max_coord && cur.coord.1 == max_coord {
-            return cur.cost;
+            return (cur.cost, cur.coord.2);
         }
         let cur_cell = grid
             .get(
@@ -145,6 +172,7 @@ fn search(grid: &mut Grid, grid_size: usize, get_neighbors: NeighborGetter) -> u
             if !next_cell.reached || new_cost < next_cell.cost_so_far {
                 next_cell.cost_so_far = new_cost;
                 next_cell.reached = true;
+                // next_cell.from = cur.coord;
                 frontier.push(FrontierItem {
                     coord: neighbor,
                     cost: new_cost,
