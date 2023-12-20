@@ -5,7 +5,7 @@ const MAX_FUNCTIONS: usize = 543;
 const MAX_DATA: usize = 200;
 const MAX_EXPRESSIONS: usize = 4;
 const REGISTER_COUNT: usize = 4;
-const STATE_STACK_INITIAL_CAP: usize = 1024;
+const STATE_STACK_INITIAL_CAP: usize = 256;
 
 type Function = ArrayVec<Expression, MAX_EXPRESSIONS>;
 
@@ -200,29 +200,31 @@ fn evaluate_ranges(functions: &[Function], start_idx: u16) -> u64 {
             match cond {
                 Condition::LessThan(reg, val) => {
                     let range = &state.registers[*reg as usize];
-                    if range.end <= *val {
+                    let pivot = *val;
+                    if range.end <= pivot {
                         // whole range passes
-                    } else if range.start >= *val {
+                    } else if range.start >= pivot {
                         states.push_back(state);
                         continue;
                     } else {
                         let mut failed = state.clone();
-                        failed.registers[*reg as usize].start = *val;
-                        state.registers[*reg as usize].end = *val;
+                        failed.registers[*reg as usize].start = pivot;
+                        state.registers[*reg as usize].end = pivot;
                         states.push_back(failed);
                     }
                 }
                 Condition::GreaterThan(reg, val) => {
                     let range = &state.registers[*reg as usize];
-                    if range.start > *val {
+                    let pivot = *val + 1;
+                    if range.start >= pivot {
                         // whole range passes
-                    } else if range.end <= *val + 1 {
+                    } else if range.end <= pivot {
                         states.push_back(state);
                         continue;
                     } else {
                         let mut failed = state.clone();
-                        failed.registers[*reg as usize].end = *val + 1;
-                        state.registers[*reg as usize].start = *val + 1;
+                        failed.registers[*reg as usize].end = pivot;
+                        state.registers[*reg as usize].start = pivot;
                         states.push_back(failed);
                     }
                 }
