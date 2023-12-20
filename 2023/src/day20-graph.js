@@ -59,6 +59,8 @@ broadcaster -> bt, rc, qs, qt
 %zm -> dv, qx
 `
 
+/** @type HTMLCanvasElement */
+let canvas = C
 /** @type CanvasRenderingContext2D */
 let ctx = C.getContext("2d")
 
@@ -159,13 +161,42 @@ const relax = () => {
     }
 }
 
+let mouseTarget = null
+let mouseDelta = [0, 0]
+ctx.canvas.onmousedown = e => {
+    let rect = canvas.getBoundingClientRect()
+    let mouse = [e.clientX - rect.left, e.clientY - rect.top]
+    for (const k in nodes) {
+        let node = nodes[k]
+        let a = node.pos
+        let b = mouse
+        let dx = b[0] - a[0]
+        let dy = b[1] - a[1]
+        let dist = Math.sqrt(dx * dx + dy * dy)
+        if (dist < 20) {
+            mouseTarget = node
+            mouseDelta = [dx, dy]
+            return
+        }
+    }
+}
+ctx.canvas.onmousemove = e => {
+    let rect = canvas.getBoundingClientRect()
+    let mouse = [e.clientX - rect.left, e.clientY - rect.top]
+    if (mouseTarget !== null) {
+        mouseTarget.pos[0] = mouse[0] - mouseDelta[0]
+        mouseTarget.pos[1] = mouse[1] - mouseDelta[1]
+    }
+}
+ctx.canvas.onmouseup = () => {
+    mouseTarget = null
+}
+
 const frame = () => {
     requestAnimationFrame(frame)
-
     if (chkRelax.checked) {
         relax()
     }
-
     draw()
 }
 frame()
