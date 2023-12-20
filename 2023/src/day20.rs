@@ -22,6 +22,14 @@ type NodeList = ArrayVec<Node, MAX_NODES>;
 type HashMap<K, V> =
     std::collections::HashMap<K, V, core::hash::BuildHasherDefault<ahash::AHasher>>;
 
+struct Machine {
+    lo_sent: u64,
+    hi_sent: u64,
+    broadcaster_idx: u8,
+    pulses: VecDeque<(u8, u8, bool)>,
+    nodes: NodeList,
+}
+
 pub fn parts_1_and_2(lines: &[&str], out: &mut String) {
     let mut node_idx_by_name = HashMap::with_capacity_and_hasher(
         lines.len(),
@@ -80,24 +88,44 @@ pub fn parts_1_and_2(lines: &[&str], out: &mut String) {
         }
     }
 
-    let mut lo_sent = 0_u64;
-    let mut hi_sent = 0_u64;
-    let mut pulses = VecDeque::new();
+    let mut machine = Machine::new(nodes, broadcaster_idx);
 
     for _ in 0..1000 {
-        pulses.clear();
-        pulses.push_back((0, broadcaster_idx, false));
+        machine.poke();
+    }
+    let result_0 = machine.lo_sent * machine.hi_sent;
 
-        while let Some((source_idx, idx, hi)) = pulses.pop_front() {
+    // Counter periods read from data/day20-graph.png
+    // Graph generated using day20-graph.html
+    let result_1 = lcm(3847, lcm(3923, lcm(4091, 4001)));
+
+    write!(out, "{}  {}", result_0, result_1).unwrap();
+}
+
+impl Machine {
+    fn new(nodes: NodeList, broadcaster_idx: u8) -> Self {
+        Self {
+            lo_sent: 0,
+            hi_sent: 0,
+            pulses: VecDeque::new(),
+            nodes,
+            broadcaster_idx,
+        }
+    }
+
+    fn poke(&mut self) {
+        self.pulses.push_back((0, self.broadcaster_idx, false));
+
+        while let Some((source_idx, idx, hi)) = self.pulses.pop_front() {
             if hi {
-                hi_sent += 1;
+                self.hi_sent += 1;
             } else {
-                lo_sent += 1;
+                self.lo_sent += 1;
             }
-            if idx as usize >= nodes.len() {
+            if idx as usize >= self.nodes.len() {
                 continue;
             }
-            let node = &mut nodes[idx as usize];
+            let node = &mut self.nodes[idx as usize];
 
             let mut ignore = false;
 
@@ -123,13 +151,22 @@ pub fn parts_1_and_2(lines: &[&str], out: &mut String) {
 
             if !ignore {
                 for dest in node.outputs.iter() {
-                    pulses.push_back((idx, *dest, outgoing));
+                    self.pulses.push_back((idx, *dest, outgoing));
                 }
             }
         }
     }
+}
 
-    let result_0 = lo_sent * hi_sent;
-    let result_1 = "";
-    write!(out, "{}  {}", result_0, result_1).unwrap();
+fn gcd(mut a: u64, mut b: u64) -> u64 {
+    while b != 0 {
+        let t = b;
+        b = a % b;
+        a = t;
+    }
+    a
+}
+
+fn lcm(a: u64, b: u64) -> u64 {
+    a / gcd(a, b) * b
 }
