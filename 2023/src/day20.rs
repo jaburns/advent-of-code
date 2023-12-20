@@ -95,8 +95,8 @@ pub fn parts_1_and_2(lines: &[&str], out: &mut String) {
     }
     let result_0 = machine.lo_sent * machine.hi_sent;
 
-    // Counter periods read from data/day20-graph.png
-    // Graph generated using day20-graph.html
+    // Counter periods read from day20-graph.png
+    // Graph generated using day20-graph.html/js
     let result_1 = lcm(3847, lcm(3923, lcm(4091, 4001)));
 
     write!(out, "{}  {}", result_0, result_1).unwrap();
