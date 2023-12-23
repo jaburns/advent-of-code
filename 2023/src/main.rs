@@ -1,4 +1,4 @@
-#![feature(array_chunks, array_windows, iter_collect_into, split_array)]
+#![feature(array_chunks, array_windows, iter_collect_into)]
 #![allow(clippy::char_lit_as_u8)]
 
 use nix::time::{clock_gettime, ClockId};
