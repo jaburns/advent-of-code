@@ -18,9 +18,7 @@ struct Block {
     max_y: u8,
     min_z: u16,
     max_z: u16,
-    supports: ArrayVec<u16, MAX_SUPPORTS>,
     supported_by: ArrayVec<u16, MAX_SUPPORTS>,
-    fallen: bool,
 }
 
 pub fn parts_1_and_2(lines: &[&str], out: &mut String) {
@@ -47,9 +45,7 @@ pub fn parts_1_and_2(lines: &[&str], out: &mut String) {
             max_y: ay.max(by) as u8,
             min_z: az.min(bz) as u16,
             max_z: az.max(bz) as u16,
-            supports: ArrayVec::default(),
             supported_by: ArrayVec::default(),
-            fallen: false,
         };
 
         blocks.push(block);
@@ -116,24 +112,22 @@ pub fn parts_1_and_2(lines: &[&str], out: &mut String) {
                 if block_id_below != 0 && !block.supported_by.contains(&block_id_below) {
                     block.supported_by.push(block_id_below);
                 }
-                let block_id_above = grid[x as usize][y as usize][block.max_z as usize + 1];
-                if block_id_above != 0 && !block.supports.contains(&block_id_above) {
-                    block.supports.push(block_id_above);
-                }
             }
         }
     }
 
+    let mut result_0 = 0;
     let mut result_1 = 0;
+    let mut fallen = [false; MAX_BLOCKS];
 
-    for i in 0..blocks.len() {
-        if blocks[i].supported_by.len() != 1 {
+    for block in blocks.iter() {
+        if block.supported_by.len() != 1 {
             continue;
         }
 
-        let j = blocks[i].supported_by[0] as usize - 1;
+        let j = block.supported_by[0] as usize - 1;
 
-        if blocks[j].fallen {
+        if fallen[j] {
             continue;
         }
 
@@ -143,12 +137,12 @@ pub fn parts_1_and_2(lines: &[&str], out: &mut String) {
 
         while fell_one {
             fell_one = false;
-            for k in 0..blocks.len() {
+            for (k, block) in blocks.iter().enumerate() {
                 if cascade[k] {
                     continue;
                 }
-                let mut should_fall = !blocks[k].supported_by.is_empty();
-                for supported_by_id in blocks[k].supported_by.iter() {
+                let mut should_fall = !block.supported_by.is_empty();
+                for supported_by_id in block.supported_by.iter() {
                     if !cascade[*supported_by_id as usize - 1] {
                         should_fall = false;
                         break;
@@ -162,10 +156,11 @@ pub fn parts_1_and_2(lines: &[&str], out: &mut String) {
             }
         }
 
-        blocks[j].fallen = true;
+        fallen[j] = true;
+        result_0 += 1;
     }
 
-    let result_0 = blocks.len() - blocks.iter().filter(|x| x.fallen).count();
+    let result_0 = blocks.len() - result_0;
 
     write!(out, "{}  {}", result_0, result_1).unwrap();
 }
