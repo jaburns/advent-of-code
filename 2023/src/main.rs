@@ -20,6 +20,7 @@ mod day21;
 mod day22;
 mod day23;
 mod day24;
+mod day25;
 mod day3;
 mod day4;
 mod day5;
@@ -55,7 +56,8 @@ static DAY_FUNCS: &[fn(&[&str], &mut String)] = &[
     day21::parts_1_and_2,
     day22::parts_1_and_2,
     day23::parts_1_and_2,
-    // day24::parts_1_and_2,
+    day24::parts_1_and_2,
+    day25::parts_1_and_2,
 ];
 
 fn main() {
