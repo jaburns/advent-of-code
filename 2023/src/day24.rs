@@ -1,11 +1,9 @@
 use arrayvec::ArrayVec;
-use glam::{dvec2, DVec2, DVec4};
+use glam::{dvec2, dvec4, DVec2, DVec4};
 use num_bigint::BigInt;
 use std::fmt::Write;
 
 const MAX_LINES: usize = 300;
-
-type V4 = (BigInt, BigInt, BigInt, BigInt);
 
 #[derive(Default, Debug, Copy, Clone)]
 struct Line2 {
@@ -13,10 +11,10 @@ struct Line2 {
     dir: DVec2,
 }
 
-#[derive(Default, Debug, Clone)]
+#[derive(Default, Debug, Copy, Clone)]
 struct Line4 {
-    pt: V4,
-    dir: V4,
+    pt: DVec4,
+    dir: DVec4,
 }
 
 pub fn parts_1_and_2(inputs: &[&str], out: &mut String) {
@@ -50,18 +48,8 @@ pub fn parts_1_and_2(inputs: &[&str], out: &mut String) {
             dir: dvec2(dir.0 as f64, dir.1 as f64),
         });
         lines4.push(Line4 {
-            pt: (
-                BigInt::from(pt.0),
-                BigInt::from(pt.1),
-                BigInt::from(pt.2),
-                BigInt::from(0),
-            ),
-            dir: (
-                BigInt::from(dir.0),
-                BigInt::from(dir.1),
-                BigInt::from(dir.2),
-                BigInt::from(0),
-            ),
+            pt: dvec4(pt.0 as f64, pt.1 as f64, pt.2 as f64, 0.0),
+            dir: dvec4(dir.0 as f64, dir.1 as f64, dir.2 as f64, 1.0),
         });
     }
 
@@ -86,75 +74,61 @@ pub fn parts_1_and_2(inputs: &[&str], out: &mut String) {
 
     let test0 = lines4.pop().unwrap();
     let test1 = lines4.pop().unwrap();
-    let mut test0_t = BigInt::from(100000000000000_i64);
-    let mut test1_t = BigInt::from(100000000000000_i64);
-    //let _ = lines4.pop().unwrap();
-    let target = lines4.pop().unwrap();
-    let grad_step = BigInt::from(10);
+    let mut test0_t = 100000000000000_f64;
+    let mut test1_t = 100000000000000_f64;
+    let grad_step = 1.0;
+
+    let measure_error = |test: Line4| -> f64 {
+        let mut result = 0.0;
+        for line in lines4.iter() {
+            result += min_dist_sqr(*line, test).sqrt() / lines4.len() as f64;
+        }
+        result
+    };
 
     let result_1_line = loop {
-        let p0 = dir4(&test0.pt, &test0.dir, &test0_t);
-        let p1 = dir4(&test1.pt, &test1.dir, &test1_t);
-        let guess = line4(&p0, &sub4(&p1, &p0));
-        let err = min_dist_sqr(&target, &guess).sqrt();
+        let p0 = test0.pt + test0_t * test0.dir;
+        let p1 = test1.pt + test1_t * test1.dir;
+        let guess = line4(p0, p1 - p0);
+        let err = measure_error(guess);
 
-        if err < BigInt::from(4) {
-            println!("err {}: {} {}", err, test0_t, test1_t);
+        if err < 4.0 {
             break guess;
         }
 
-        let p0n = dir4(
-            &test0.pt,
-            &test0.dir,
-            &(test0_t.clone() - grad_step.clone()),
-        );
-        let p0p = dir4(
-            &test0.pt,
-            &test0.dir,
-            &(test0_t.clone() + grad_step.clone()),
-        );
-        let guess_0n = line4(&p0n, &sub4(&p1, &p0n));
-        let guess_0p = line4(&p0p, &sub4(&p1, &p0p));
-        let err_0n = min_dist_sqr(&target, &guess_0n).sqrt();
-        let err_0p = min_dist_sqr(&target, &guess_0p).sqrt();
+        let p0n = test0.pt + test0.dir * (test0_t - grad_step);
+        let p0p = test0.pt + test0.dir * (test0_t + grad_step);
+        let guess_0n = line4(p0n, p1 - p0n);
+        let guess_0p = line4(p0p, p1 - p0p);
+        let err_0n = measure_error(guess_0n);
+        let err_0p = measure_error(guess_0p);
 
         if err_0n < err {
-            let step = (err.clone() - err_0n) / grad_step.clone();
-            test0_t -= step * err.clone() / 1_000_000_000i64;
+            let step = (err - err_0n) / grad_step;
+            test0_t -= step * err;
         } else if err_0p < err {
-            let step = (err.clone() - err_0p) / grad_step.clone();
-            test0_t += step * err.clone() / 1_000_000_000i64;
+            let step = (err - err_0p) / grad_step;
+            test0_t += step * err;
         } else {
-            println!("Converged A {} {} {}", err, err_0n, err_0p);
+            println!("Converged 0 {} {} {}", err, err_0n, err_0p);
         }
 
-        let p1n = dir4(
-            &test1.pt,
-            &test1.dir,
-            &(test1_t.clone() - grad_step.clone()),
-        );
-        let p1p = dir4(
-            &test1.pt,
-            &test1.dir,
-            &(test1_t.clone() + grad_step.clone()),
-        );
-        let guess_1n = line4(&p0, &sub4(&p1n, &p0));
-        let guess_1p = line4(&p0, &sub4(&p1p, &p0));
-        let err_1n = min_dist_sqr(&target, &guess_1n).sqrt();
-        let err_1p = min_dist_sqr(&target, &guess_1p).sqrt();
+        let p1n = test1.pt + test1.dir * (test1_t - grad_step);
+        let p1p = test1.pt + test1.dir * (test1_t + grad_step);
+        let guess_1n = line4(p0, p1n - p0);
+        let guess_1p = line4(p0, p1p - p0);
+        let err_1n = measure_error(guess_1n);
+        let err_1p = measure_error(guess_1p);
 
         if err_1n < err {
-            let step = (err.clone() - err_1n) / grad_step.clone();
-            test1_t -= step * err.clone() / 1_000_000_000i64;
+            let step = (err - err_1n) / grad_step;
+            test1_t -= step * err;
         } else if err_1p < err {
-            let step = (err.clone() - err_1p) / grad_step.clone();
-            test1_t += step * err.clone() / 1_000_000_000i64;
+            let step = (err - err_1p) / grad_step;
+            test1_t += step * err;
         } else {
-            println!("Converged B");
+            println!("Converged 1 {} {} {}", err, err_1n, err_1p);
         }
-
-        //test0_t = test0_t.max(BigInt::from(0));
-        //test1_t = test1_t.max(BigInt::from(0));
 
         println!("err {}: {} {}", err, test0_t, test1_t);
     };
@@ -170,77 +144,36 @@ pub fn parts_1_and_2(inputs: &[&str], out: &mut String) {
     write!(out, "{}  {:?}", result_0, result_1).unwrap();
 }
 
-fn line4(pt: &V4, dir: &V4) -> Line4 {
-    Line4 {
-        pt: pt.clone(),
-        dir: dir.clone(),
-    }
+fn line4(pt: DVec4, dir: DVec4) -> Line4 {
+    Line4 { pt, dir }
 }
 
-fn dot4(a: &V4, b: &V4) -> BigInt {
-    a.0.clone() * b.0.clone()
-        + a.1.clone() * b.1.clone()
-        + a.2.clone() * b.2.clone()
-        + a.3.clone() * b.3.clone()
-}
-fn add4(a: &V4, b: &V4) -> V4 {
-    (
-        a.0.clone() + b.0.clone(),
-        a.1.clone() + b.1.clone(),
-        a.2.clone() + b.2.clone(),
-        a.3.clone() + b.3.clone(),
-    )
-}
-fn sub4(a: &V4, b: &V4) -> V4 {
-    (
-        a.0.clone() - b.0.clone(),
-        a.1.clone() - b.1.clone(),
-        a.2.clone() - b.2.clone(),
-        a.3.clone() - b.3.clone(),
-    )
-}
-fn distsq4(a: &V4, b: &V4) -> BigInt {
-    let delta = sub4(a, b);
-    dot4(&delta, &delta)
-}
-fn scale4(scale: &BigInt, b: &V4) -> V4 {
-    (
-        scale * b.0.clone(),
-        scale * b.1.clone(),
-        scale * b.2.clone(),
-        scale * b.3.clone(),
-    )
-}
-fn dir4(pt: &V4, dir: &V4, t: &BigInt) -> V4 {
-    add4(pt, &scale4(t, dir))
-}
+fn min_dist_sqr(line0: Line4, line1: Line4) -> f64 {
+    let a = line0.pt;
+    let b = line0.dir;
+    let c = line1.pt;
+    let d = line1.dir;
+    let e = a - c;
 
-fn min_dist_sqr(line0: &Line4, line1: &Line4) -> BigInt {
-    let a = &line0.pt;
-    let b = &line0.dir;
-    let c = &line1.pt;
-    let d = &line1.dir;
-    let e = sub4(a, c);
+    let bb = b.dot(b);
+    let dd = d.dot(d);
+    let bd = b.dot(d);
+    let be = b.dot(e);
+    let de = d.dot(e);
 
-    let bb = dot4(b, b);
-    let dd = dot4(d, d);
-    let bd = dot4(b, d);
-    let be = dot4(b, &e);
-    let de = dot4(d, &e);
+    let det = bd * bd - bb * dd;
 
-    let det = bd.clone() * bd.clone() - bb.clone() * dd.clone();
-
-    if det == BigInt::from(0) {
-        return distsq4(&line0.pt, &line1.pt);
+    if det < 1e-9 {
+        return line0.pt.distance_squared(line1.pt);
     }
 
-    let t0 = (dd.clone() * be.clone() - de.clone() * bd.clone()) / det.clone();
-    let t1 = (be.clone() * bd.clone() - bb.clone() * de.clone()) / det.clone();
+    let t0 = (dd * be - de * bd) / det;
+    let t1 = (be * bd - bb * de) / det;
 
-    let p0 = dir4(&line0.pt, &line0.dir, &t0);
-    let p1 = dir4(&line1.pt, &line1.dir, &t1);
+    let p0 = line0.pt + t0 * line0.dir;
+    let p1 = line1.pt + t1 * line1.dir;
 
-    distsq4(&p0, &p1)
+    p0.distance_squared(p1)
 }
 
 fn find_intersection(a: Line2, b: Line2) -> Option<DVec2> {
