@@ -1,6 +1,6 @@
 use arrayvec::ArrayVec;
-use glam::{dvec2, dvec4, DVec2, DVec4};
-use num_bigint::BigInt;
+use derive_more::{Add, AddAssign};
+use glam::{dvec2, dvec3, dvec4, vec3a, DVec2, DVec3, DVec4, Vec3A};
 use std::fmt::Write;
 
 const MAX_LINES: usize = 300;
@@ -16,6 +16,9 @@ struct Line4 {
     pt: DVec4,
     dir: DVec4,
 }
+
+#[derive(Default, Debug, Copy, Clone, Add, AddAssign)]
+struct LVec3(i64, i64, i64);
 
 pub fn parts_1_and_2(inputs: &[&str], out: &mut String) {
     let mut lines2 = ArrayVec::<Line2, MAX_LINES>::new();
@@ -72,74 +75,45 @@ pub fn parts_1_and_2(inputs: &[&str], out: &mut String) {
         }
     }
 
-    let test0 = lines4.pop().unwrap();
-    let test1 = lines4.pop().unwrap();
-    let mut test0_t = 100000000000000_f64;
-    let mut test1_t = 100000000000000_f64;
-    let grad_step = 1.0;
+    let mut test_pos = DVec3::ZERO;
+    let mut test_vel = DVec3::ZERO;
 
-    let measure_error = |test: Line4| -> f64 {
+    let measure_avg_distance = |pos: DVec3, vel: DVec3| -> f64 {
+        let test = line4(pos.extend(0.0), vel.extend(1.0));
         let mut result = 0.0;
-        for line in lines4.iter() {
+        for (i, line) in lines4.iter().enumerate() {
             result += min_dist_sqr(*line, test).sqrt() / lines4.len() as f64;
         }
         result
     };
 
-    let result_1_line = loop {
-        let p0 = test0.pt + test0_t * test0.dir;
-        let p1 = test1.pt + test1_t * test1.dir;
-        let guess = line4(p0, p1 - p0);
-        let err = measure_error(guess);
+    loop {
+        let base_dist = measure_avg_distance(test_pos, test_vel);
 
-        if err < 4.0 {
-            break guess;
-        }
+        let mut dx = base_dist - measure_avg_distance(test_pos + DVec3::X, test_vel);
+        let mut dy = base_dist - measure_avg_distance(test_pos + DVec3::Y, test_vel);
+        let mut dz = base_dist - measure_avg_distance(test_pos + DVec3::Z, test_vel);
+        dx *= base_dist / 1_000.0;
+        dy *= base_dist / 1_000.0;
+        dz *= base_dist / 1_000.0;
+        test_pos += dvec3(dx, dy, dz);
 
-        let p0n = test0.pt + test0.dir * (test0_t - grad_step);
-        let p0p = test0.pt + test0.dir * (test0_t + grad_step);
-        let guess_0n = line4(p0n, p1 - p0n);
-        let guess_0p = line4(p0p, p1 - p0p);
-        let err_0n = measure_error(guess_0n);
-        let err_0p = measure_error(guess_0p);
+        let mut dx = (base_dist - measure_avg_distance(test_pos, test_vel + DVec3::X));
+        let mut dy = (base_dist - measure_avg_distance(test_pos, test_vel + DVec3::Y));
+        let mut dz = (base_dist - measure_avg_distance(test_pos, test_vel + DVec3::Z));
+        dx /= base_dist;
+        dy /= base_dist;
+        dz /= base_dist;
+        test_vel += dvec3(dx, dy, dz);
 
-        if err_0n < err {
-            let step = (err - err_0n) / grad_step;
-            test0_t -= step * err;
-        } else if err_0p < err {
-            let step = (err - err_0p) / grad_step;
-            test0_t += step * err;
-        } else {
-            println!("Converged 0 {} {} {}", err, err_0n, err_0p);
-        }
+        test_vel = test_vel.clamp(DVec3::splat(-500.0), DVec3::splat(500.0));
 
-        let p1n = test1.pt + test1.dir * (test1_t - grad_step);
-        let p1p = test1.pt + test1.dir * (test1_t + grad_step);
-        let guess_1n = line4(p0, p1n - p0);
-        let guess_1p = line4(p0, p1p - p0);
-        let err_1n = measure_error(guess_1n);
-        let err_1p = measure_error(guess_1p);
+        println!("{}  -  {} {}", base_dist, test_pos, test_vel);
+    }
 
-        if err_1n < err {
-            let step = (err - err_1n) / grad_step;
-            test1_t -= step * err;
-        } else if err_1p < err {
-            let step = (err - err_1p) / grad_step;
-            test1_t += step * err;
-        } else {
-            println!("Converged 1 {} {} {}", err, err_1n, err_1p);
-        }
-
-        println!("err {}: {} {}", err, test0_t, test1_t);
-    };
-
-    println!("done {:?}", result_1_line);
-
-    // let dirn = result_1_line.dir.normalize();
-    // let amount = result_1_line.pt.w / dirn.w;
-    // let result_1 = (result_1_line.pt - amount * dirn) * 10000.0;
-    // let result_1 = result_1.x as i64 + result_1.y as i64 + result_1.z as i64;
     let result_1 = 0;
+
+    // 163801440047383.16
 
     write!(out, "{}  {:?}", result_0, result_1).unwrap();
 }
@@ -163,7 +137,7 @@ fn min_dist_sqr(line0: Line4, line1: Line4) -> f64 {
 
     let det = bd * bd - bb * dd;
 
-    if det < 1e-9 {
+    if det.abs() < 1e-9 {
         return line0.pt.distance_squared(line1.pt);
     }
 
