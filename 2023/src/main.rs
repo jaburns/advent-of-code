@@ -57,7 +57,7 @@ static DAY_FUNCS: &[fn(&[&str], &mut String)] = &[
     day22::parts_1_and_2,
     day23::parts_1_and_2,
     day24::parts_1_and_2,
-    day25::parts_1_and_2,
+    // day25::parts_1_and_2,
 ];
 
 fn main() {
