@@ -13,6 +13,7 @@ stats_alloc = "0.1.8"
 nix = { version = "0.27.1", features = ["time"] }
 rayon = "1.8.0"
 derive_more = "0.99.17"
+nalgebra = "0.32.3"
 
 [profile.release]
 # lto = true
