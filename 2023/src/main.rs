@@ -75,6 +75,8 @@ fn main() {
         DAY_FUNCS.len()
     };
 
+    panic!("lol");
+
     let data = std::fs::read_to_string(format!("data/day{}.{}", day, data_ext)).unwrap();
     let data_lines: Vec<&str> = data.trim().lines().map(|x| x.trim()).collect();
 
