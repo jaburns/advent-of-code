@@ -2,6 +2,7 @@
 
 #include "day10.c"
 #include "day11.c"
+#include "day12.c"
 
 #define DAY_NUMBER 11
 #define INPUT_TYPE "main"
@@ -13,7 +14,7 @@ internal void print_result_part(DayResultPart* part) {
     if (part->is_str) {
         printf("%.*s", StrPrintfArgs(part->as_str));
     } else {
-        printf("%lli", part->as_i64);
+        printf("%llu", part->as_u64);
     }
 }
 
@@ -21,21 +22,21 @@ internal void print_time(Arena* arena, u64 nanos) {
     char* units = "ns";
     if (nanos > 1000000000) {
         nanos /= 1000000;
-        units = "ms";
+        units  = "ms";
     } else if (nanos > 1000000) {
         nanos /= 1000;
-        units = "μs";
+        units  = "μs";
     }
     printf("%s %s", u64_print_with_commas(arena, nanos), units);
 }
 
 internal void run_day(void) {
     ArenaTemp scratch = scratch_acquire(NULL, 0);
-    Str input = str_read_file(scratch.arena, "inputs/day" DayStr(DAY_NUMBER) "-" INPUT_TYPE ".txt");
+    Str       input   = str_read_file(scratch.arena, "inputs/day" DayStr(DAY_NUMBER) "-" INPUT_TYPE ".txt");
 
-    u64 start = timing_get_nanos_since_start();
+    u64       start  = timing_get_nanos_since_start();
     DayResult result = DayFn(DAY_NUMBER)(scratch.arena, input);
-    u64 delta = timing_get_nanos_since_start() - start;
+    u64       delta  = timing_get_nanos_since_start() - start;
 
     printf("\n");
     printf("-- DAY " DayStr(DAY_NUMBER) " --\n");

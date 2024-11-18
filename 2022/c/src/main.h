@@ -5,7 +5,7 @@
 structdef(DayResultPart) {
     bool is_str;
     union {
-        i64 as_i64;
+        u64 as_u64;
         Str as_str;
     };
 };
