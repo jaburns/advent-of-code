@@ -1,0 +1,11 @@
+BasedOnStyle: Google
+IndentWidth: 4
+TabWidth: 4
+ColumnLimit: 0
+UseTab: Never
+DerivePointerAlignment: false
+SortIncludes: false
+PointerAlignment: Left
+AttributeMacros: [SARRAY]
+AlignAfterOpenBracket: BlockIndent
+AlignConsecutiveMacros: true
