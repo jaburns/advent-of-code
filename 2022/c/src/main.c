@@ -1,10 +1,12 @@
+#define MEMORY_COMMIT_BLOCK_SIZE (32ULL << 20)
+
 #include "../jaburns_c/base/inc.c"
 
 #include "day10.c"
 #include "day11.c"
 #include "day12.c"
 
-#define DAY_NUMBER 11
+#define DAY_NUMBER 12
 #define INPUT_TYPE "main"
 
 #define DayFn(x)  Concatenate(day, x)

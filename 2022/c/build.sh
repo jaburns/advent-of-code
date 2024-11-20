@@ -2,7 +2,7 @@
 cd "$(dirname "$0")"
 set -e
 
-DEBUG_BUILD=1
+#DEBUG_BUILD=1
 
 WARNINGS='
     -Wall
@@ -26,6 +26,7 @@ if [[ -n "$DEBUG_BUILD" ]]; then
 else
     OPTS='-O3'
 fi
+
 
 mkdir -p bin
 
