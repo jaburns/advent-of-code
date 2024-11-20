@@ -3,7 +3,7 @@
     "configurations": [
         {
             "name": "macos",
-            "defines": ["DEBUG=1"],
+            "defines": [],
             "compilerPath": "/usr/bin/clang",
             "cStandard": "c11",
             "cppStandard": "c++11",
