@@ -3,12 +3,15 @@
 
 #include "../jaburns_c/base/inc.c"
 
+#define int
+
 #include "day10.c"
 #include "day11.c"
 #include "day12.c"
 
 #define DAY_NUMBER 12
 #define INPUT_TYPE "main"
+#define ITERATIONS 10000
 
 #define DayFn(x)  Concatenate(day, x)
 #define DayStr(x) Stringify(x)
@@ -33,18 +36,28 @@ internal void print_time(Arena* arena, u64 nanos) {
     printf("%s %s", u64_print_with_commas(arena, nanos), units);
 }
 
-internal void run_day(void) {
+internal void run_day() {
     ArenaTemp scratch = scratch_acquire(NULL, 0);
     Str       input   = str_read_file(scratch.arena, "inputs/day" DayStr(DAY_NUMBER) "-" INPUT_TYPE ".txt");
 
-    u64       start  = timing_get_nanos_since_start();
-    DayResult result = DayFn(DAY_NUMBER)(scratch.arena, input);
-    u64       delta  = timing_get_nanos_since_start() - start;
+    DayResult result;
+    u64       total_time = 0;
+    for (u32 i = 0; i < ITERATIONS; ++i) {
+        ArenaMark mark = arena_mark(scratch.arena);
+
+        u64 start = timing_get_nanos_since_start();
+        result    = DayFn(DAY_NUMBER)(scratch.arena, input);
+        u64 delta = timing_get_nanos_since_start() - start;
+
+        total_time += delta;
+
+        arena_restore(scratch.arena, mark);
+    }
 
     printf("\n");
     printf("-- DAY " DayStr(DAY_NUMBER) " --\n");
     printf("   Time: ");
-    print_time(scratch.arena, delta);
+    print_time(scratch.arena, total_time / ITERATIONS);
     printf("\n");
     printf(" Part 1: ");
     print_result_part(&result.parts[0]);
@@ -52,9 +65,11 @@ internal void run_day(void) {
     printf(" Part 2: ");
     print_result_part(&result.parts[1]);
     printf("\n\n");
+
+    scratch_release(scratch);
 }
 
-i32 main(int argc, char** argv) {
+i32 main(i32 argc, char** argv) {
     scratch_thread_local_create(&GLOBAL_ALLOCATOR);
     timing_global_init();
 

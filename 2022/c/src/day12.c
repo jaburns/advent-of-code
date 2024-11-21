@@ -1,36 +1,33 @@
 #include "main.h"
 
 enumdef(Day12Flag, u8){
-    D12_FLAG_UP          = 1,
-    D12_FLAG_DOWN        = 2,
-    D12_FLAG_LEFT        = 4,
-    D12_FLAG_RIGHT       = 8,
-    D12_FLAG_IN_OPEN_SET = 16,
+    D12_FLAG_UP    = 1,
+    D12_FLAG_DOWN  = 2,
+    D12_FLAG_LEFT  = 4,
+    D12_FLAG_RIGHT = 8,
 };
 
 structdef(Day12Cell) {
     Day12Flag flags;
     u8        elevation;
-
-    u16 idx;
-    u16 distance;
+    u16       idx;
+    u16       distance;
 };
 typedef Day12Cell* Day12Cell_ptr;
 DefArrayTypes(Day12Cell_ptr);
 
-#define D12_GRID_WIDTH_BITS 8
-#define D12_GRID_WIDTH      (1 << D12_GRID_WIDTH_BITS)
-#define D12_GRID_WIDTH_MASK (D12_GRID_WIDTH - 1)
+#define D12_GRID_WIDTH 256
 
 internal DayResult day12(Arena* arena, Str input) {
     Day12Cell* cells = arena_alloc_nz(arena, Kb(16) * sizeof(Day12Cell));
 
     // --- parsing ---
 
-    ivec2 start = {0}, end = {0};
-
+    ivec2 start = {0};
+    ivec2 end   = {0};
     u16   width = 0;
     ivec2 read  = {0};
+
     for (u16 char_idx = 0; char_idx < input.count; ++char_idx) {
         char ch = input.items[char_idx];
 
@@ -43,10 +40,13 @@ internal DayResult day12(Arena* arena, Str input) {
 
         u16        idx  = read.x + D12_GRID_WIDTH * read.y;
         Day12Cell* cell = &cells[idx];
+        cell->flags     = 0;
         cell->idx       = idx;
+        cell->distance  = 0;
 
         if (ch == 'S') {
-            start = read;
+            start           = read;
+            cell->elevation = 0;
         } else if (ch == 'E') {
             end             = read;
             cell->elevation = 'z' - 'a';
@@ -56,22 +56,23 @@ internal DayResult day12(Arena* arena, Str input) {
 
         ++read.x;
     }
+
     u16 height = read.y + 1;
 
     for (u16 y = 0; y < height; ++y) {
         u16 yoff = D12_GRID_WIDTH * y;
         for (u16 x = 0; x < width; ++x) {
-            Day12Cell* cell  = &cells[x + yoff];
-            cell->flags     |= (x > 0 && cells[x - 1 + yoff].elevation <= cell->elevation + 1) ? D12_FLAG_LEFT : 0;
-            cell->flags     |= (y > 0 && cells[x + yoff - D12_GRID_WIDTH].elevation <= cell->elevation + 1) ? D12_FLAG_UP : 0;
-            cell->flags     |= (x < width - 1 && cells[x + 1 + yoff].elevation <= cell->elevation + 1) ? D12_FLAG_RIGHT : 0;
-            cell->flags     |= (y < height - 1 && cells[x + yoff + D12_GRID_WIDTH].elevation <= cell->elevation + 1) ? D12_FLAG_DOWN : 0;
+            Day12Cell* cell = &cells[x + yoff];
+            // clang-format off
+            cell->flags |= (x > 0          && cells[ x - 1 + yoff                  ].elevation >= cell->elevation - 1) * D12_FLAG_LEFT  ;
+            cell->flags |= (y > 0          && cells[ x     + yoff - D12_GRID_WIDTH ].elevation >= cell->elevation - 1) * D12_FLAG_UP    ;
+            cell->flags |= (x < width - 1  && cells[ x + 1 + yoff                  ].elevation >= cell->elevation - 1) * D12_FLAG_RIGHT ;
+            cell->flags |= (y < height - 1 && cells[ x     + yoff + D12_GRID_WIDTH ].elevation >= cell->elevation - 1) * D12_FLAG_DOWN  ;
+            // clang-format on
         }
     }
 
     // --- breadth-first search ---
-
-    u16 start_idx = start.x + D12_GRID_WIDTH * start.y;
 
     u16 part1 = 0;
     u16 part2 = 0;
@@ -79,12 +80,12 @@ internal DayResult day12(Arena* arena, Str input) {
     Vec_Day12Cell_ptr open      = VecAllocNZ(Day12Cell_ptr, arena, 512);
     Vec_Day12Cell_ptr open_next = VecAllocNZ(Day12Cell_ptr, arena, 512);
 
+    u16 start_idx  = start.x + D12_GRID_WIDTH * start.y;
     *VecPush(open) = &cells[end.x + D12_GRID_WIDTH * end.y];
 
     for (;;) {
         while (open.count) {
-            Day12Cell* cell  = *VecPop(open);
-            ivec2      coord = (ivec2){cell->idx & D12_GRID_WIDTH_MASK, cell->idx >> D12_GRID_WIDTH_BITS};
+            Day12Cell* cell = *VecPop(open);
 
             if (part2 == 0 && cell->elevation == 0) {
                 part2 = cell->distance;
@@ -94,30 +95,30 @@ internal DayResult day12(Arena* arena, Str input) {
                 goto end;
             }
 
-            if (coord.x > 0) {
+            if (cell->flags & D12_FLAG_LEFT) {
                 Day12Cell* neighbor = &cells[cell->idx - 1];
-                if (!neighbor->distance && (neighbor->flags & D12_FLAG_RIGHT)) {
+                if (!neighbor->distance) {
                     neighbor->distance  = cell->distance + 1;
                     *VecPush(open_next) = neighbor;
                 }
             }
-            if (coord.x < width - 1) {
+            if (cell->flags & D12_FLAG_RIGHT) {
                 Day12Cell* neighbor = &cells[cell->idx + 1];
-                if (!neighbor->distance && (neighbor->flags & D12_FLAG_LEFT)) {
+                if (!neighbor->distance) {
                     neighbor->distance  = cell->distance + 1;
                     *VecPush(open_next) = neighbor;
                 }
             }
-            if (coord.y > 0) {
+            if (cell->flags & D12_FLAG_UP) {
                 Day12Cell* neighbor = &cells[cell->idx - D12_GRID_WIDTH];
-                if (!neighbor->distance && (neighbor->flags & D12_FLAG_DOWN)) {
+                if (!neighbor->distance) {
                     neighbor->distance  = cell->distance + 1;
                     *VecPush(open_next) = neighbor;
                 }
             }
-            if (coord.y < height - 1) {
+            if (cell->flags & D12_FLAG_DOWN) {
                 Day12Cell* neighbor = &cells[cell->idx + D12_GRID_WIDTH];
-                if (!neighbor->distance && (neighbor->flags & D12_FLAG_UP)) {
+                if (!neighbor->distance) {
                     neighbor->distance  = cell->distance + 1;
                     *VecPush(open_next) = neighbor;
                 }
@@ -146,10 +147,14 @@ end:
     };
 }
 
-// --- part 1 :: A* search from start to end ---
+// ------------------------------------------------------------------------------------------------------------------
+// --- original part 1 :: A* search from start to end ---
 // this ends up being slower than just brute-force breadth-first searching.
 // the heap management dominates the runtime
-
+//
+// #define D12_GRID_WIDTH_BITS 8
+// #define D12_GRID_WIDTH      (1 << D12_GRID_WIDTH_BITS)
+// #define D12_GRID_WIDTH_MASK (D12_GRID_WIDTH - 1)
 // u16 part1 = 0;
 //     {
 //         Vec_Day12Cell_ptr open_set = VecAllocNZ(Day12Cell_ptr, arena, 512);
