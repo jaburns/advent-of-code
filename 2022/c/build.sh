@@ -30,4 +30,4 @@ fi
 
 mkdir -p bin
 
-clang -std=c11 src/main.c $WARNINGS $OPTS -o bin/aoc2024
+clang -std=c11 src/day20171.s src/main.c $WARNINGS $OPTS -o bin/aoc2024

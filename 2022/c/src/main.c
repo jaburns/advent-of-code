@@ -8,10 +8,11 @@
 #include "day10.c"
 #include "day11.c"
 #include "day12.c"
+#include "day20171.h"
 
-#define DAY_NUMBER 12
+#define DAY_NUMBER 20171
 #define INPUT_TYPE "main"
-#define ITERATIONS 10000
+#define ITERATIONS 100000
 
 #define DayFn(x)  Concatenate(day, x)
 #define DayStr(x) Stringify(x)
