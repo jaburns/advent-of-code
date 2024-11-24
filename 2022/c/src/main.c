@@ -39,7 +39,8 @@ internal void print_time(Arena* arena, u64 nanos) {
 
 internal void run_day() {
     ArenaTemp scratch = scratch_acquire(NULL, 0);
-    Str       input   = str_read_file(scratch.arena, "inputs/day" DayStr(DAY_NUMBER) "-" INPUT_TYPE ".txt");
+    arena_alloc_nz(scratch.arena, Kb(4));
+    Str input = str_read_file(scratch.arena, "inputs/day" DayStr(DAY_NUMBER) "-" INPUT_TYPE ".txt");
 
     DayResult result;
     u64       total_time = 0;
