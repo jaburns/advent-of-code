@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../jaburns_c/base/inc.h"
+#include "../../../jaburns_c/base/inc.h"
 
 structdef(DayResultPart) {
     bool is_str;

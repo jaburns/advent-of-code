@@ -1,7 +1,7 @@
 #define JBC_MEMORY_COMMIT_BLOCK_SIZE (32ULL << 20)
 #define JBC_ALWAYS_SMALL_ENUMS
 
-#include "../jaburns_c/base/inc.c"
+#include "../../../jaburns_c/base/inc.c"
 
 #define int
 
