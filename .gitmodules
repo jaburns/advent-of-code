@@ -1,0 +1,3 @@
+[submodule "jaburns_c"]
+	path = jaburns_c
+	url = git@github.com:jaburns/c
