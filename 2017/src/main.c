@@ -5,10 +5,11 @@
 
 #include "../../jaburns_c/base/inc.c"
 
-// defined in day1.s
+// defined in *.s
 DayResult day1(Arena* arena, Str input);
+DayResult day2(Arena* arena, Str input);
 
-#define DAY_NUMBER 1
+#define DAY_NUMBER 2
 #define INPUT_TYPE "main"
 #define ITERATIONS 100000
 

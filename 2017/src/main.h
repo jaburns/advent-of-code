@@ -2,8 +2,6 @@
 
 #include "../../jaburns_c/base/inc.h"
 
-#define int
-
 structdef(DayResultPart) {
     bool is_str;
     union {
