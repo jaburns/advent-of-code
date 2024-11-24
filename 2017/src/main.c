@@ -1,17 +1,16 @@
 #define JBC_MEMORY_COMMIT_BLOCK_SIZE (32ULL << 20)
 #define JBC_ALWAYS_SMALL_ENUMS
 
-#include "../../../jaburns_c/base/inc.c"
+#include "main.h"
 
-#define int
+#include "../../jaburns_c/base/inc.c"
 
-#include "day10.c"
-#include "day11.c"
-#include "day12.c"
+// defined in day1.s
+DayResult day1(Arena* arena, Str input);
 
-#define DAY_NUMBER 12
+#define DAY_NUMBER 1
 #define INPUT_TYPE "main"
-#define ITERATIONS 10000
+#define ITERATIONS 100000
 
 #define DayFn(x)  Concatenate(day, x)
 #define DayStr(x) Stringify(x)

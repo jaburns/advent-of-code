@@ -1,0 +1,19 @@
+BasedOnStyle: Google
+IndentWidth: 4
+TabWidth: 4
+ColumnLimit: 0
+UseTab: Never
+DerivePointerAlignment: false
+SortIncludes: false
+PointerAlignment: Left
+AttributeMacros: [StaticVec]
+AlignAfterOpenBracket: BlockIndent
+AlignConsecutiveAssignments:
+  Enabled: true
+  AlignCompound: true
+  PadOperators: true
+AlignConsecutiveDeclarations:
+  Enabled: true
+  AlignFunctionDeclarations: true
+  AlignFunctionPointers: true
+AlignConsecutiveMacros: true

@@ -1,13 +1,13 @@
 .section __TEXT,__text
 
 ; ======================================================================================================================
-; DayResult day20171(Arena* arena, Str input);
+; DayResult day1(Arena* arena, Str input);
 ; x0 -> Arena*      arena
 ; x1 -> char*       input.items
 ; x2 -> size_t      input.count
 ; x8 -> DayResult*  result
-.global _day20171
-_day20171:
+.global _day1
+_day1:
     ; preamble
         stp x29, x30, [sp, #-16]!
         mov x29, sp
