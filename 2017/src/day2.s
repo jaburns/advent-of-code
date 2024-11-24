@@ -1,6 +1,7 @@
 .section __TEXT,__text
 
-; 1271 ns
+; 1271 ns for part 1 only, computation was inlined in parse instead of parsing into memory
+; 1292 ns for part 1 where we parse into memory and then operate on parsed data
 
 ; ======================================================================================================================
 ; DayResult day2(Arena* arena, Str input);
@@ -13,10 +14,6 @@ _day2:
     ; preamble
         stp x29, x30, [sp, #-16]!
         mov x29, sp
-
-    ;[x] match either tab or newline with the cmeq (is there a less than instead of eq)
-    ;[x] measure row width by counting tabs until we hit a newline
-    ;[ ] loop until we hit the end of the input string, writing grid values to the memory immediately after the input
 
     ; v1 : ascii tab
     ; v4 : ascii newline
@@ -54,23 +51,17 @@ _day2:
             b     2b
         3: 
 
-    ; parse and process the input
-    ; x12 : result / checksum
-    ; x1  : mutated, walks the string
-        ; x7 : columns left in current row
+    ; parse the digits into the memory immediately after the input string (pre-allocated arena)
+    ; x1 : mutated, walks the string
+    ; x9 : write pointer start
+    ; x7 : write pointer current / final
         ; v0 : substring
         ; v2, v3 : temp
         ; x3 : 4x number of digits in loaded number 
         ; x4 : temp
-
-        ; x10 : cur min
-        ; x11 : cur max
-
-        mov x12, #0
-
-        2:  mov x7, x5                   ; row start
-            mov x10, #0xffffffffffffffff
-            mov x11, #0
+        add x7, x6, #16                  ; 16-byte align the write pointer into the post-input-data arena
+        and x7, x7, 0xfffffffffffffff0   ; TODO use movn x7, #0xf (move with not)
+        mov x9, x7
 
         1:  ld1  {v0.16b}, [x1]          ; load 16 byte chunk and set each non-digit separator byte
             cmle v2.16b, v0.16b, v4.16b 
@@ -90,27 +81,66 @@ _day2:
             ld1 {v2.8h}, [x4]
             mul v3.8h, v3.8h, v2.8h
 
-            addv h3, v3.4h          ; sum up the digit values to get the final parsed number
-            umov w4, v3.h[0]
+            addv h3, v3.4h    ; sum up the digit values to get the final parsed number
+            umov w4, v3.h[0]  ;   and store it at the write pointer
+            strh w4, [x7]
 
-            cmp  x4, x10            ; update min and max for the current row
-            csel x10, x4, x10, lo
-            cmp  x4, x11
-            csel x11, x4, x11, hi
-
-            add  x3, x3, #4          ; bump the read pointer and lap the inner loop if there's more columns left
+            add  x3, x3, #4          ; bump pointers/counters and loop if we're not at the end
             add  x1, x1, x3, lsr #2
-            subs x7, x7, #1       
-            bne  1b
+            add  x7, x7, 2
+            cmp  x1, x6
+            blt 1b
 
-            sub x11, x11, x10  ; accumulate the min/max difference for this row into the result
-            add x12, x12, x11
-            cmp x1, x6         ; jump to top of loop if we're not at the end of the input
-            blt 2b
+    ; asserting here that the number of columns fits neatly into vector registers ( x5 % 8 == 0 ) 
+;       and x0, x5, #0xfffffffffffffff8
+;       cmp x0, x5
+;       beq 1f
+;       brk #1
+;   1:
+
+    ; x5 : number of register-wide chunks of data per row (8 items per chunk)
+        lsr x5, x5, #3
+
+    ; --- at this point the only scratch registers with values we care about are: ---
+    ; x9 : pointer start of data (u16)
+    ; x7 : pointer to end of data
+    ; x5 : number of 8-item chunks per row
+    ; ---
+
+    ; part 1 - loop over rows and find the sum of min/max difference across columns
+    ; h5 : part 1 result
+        ; x0 : read pointer
+        ; x1 : chunks left in this row
+        ; v0, v1, v2 : temp
+        ; h3, h4 : cumulative min/max respectively
+        mov  x0, x9
+        movi v5.16b, #0
+
+        2:  mov   x1, x5        ; init per-row state
+            movi  v3.16b, #0xff
+            movi  v4.16b, #0
+        1:  ld1   {v0.16b}, [x0]      ; load a chunk and accumulate min/max,
+            uminv h1, v0.8h           ;   looping if there's more chunks
+            umaxv h2, v0.8h
+            umin  v3.8h, v3.8h, v1.8h
+            umax  v4.8h, v4.8h, v2.8h
+            add   x0, x0, #16
+            subs  x1, x1, #1
+            bne   1b
+
+            sub   v3.8h, v4.8h, v3.8h  ; at the end of the row, add up the min/max
+            add   v5.8h, v5.8h, v3.8h  ;   difference into the final result
+            cmp   x0, x7
+            blt   2b
+
+    ; x0 : part 1 result
+        umov w0, v5.h[0]
+
+    ; part 2 - loop over rows searching for evenly divisible pairs
 
     ; write result into the returned struct
         str xzr, [x8       ]  ; part[0].is_str
-        str x12, [x8, #0x08]  ; part[0].as_u64
+        str x0,  [x8, #0x08]  ; part[0].as_u64
         str xzr, [x8, #0x18]  ; part[1].is_str
         str xzr, [x8, #0x20]  ; part[1].as_u64
 
