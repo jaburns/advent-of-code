@@ -1,7 +1,5 @@
 #include "main.h"
 
-typedef simde_uint8x16_t u8x16;
-
 internal no_inline DayResult day1_c(Arena* arena, Str input) {
     u8x16 digit_mask = simde_vdupq_n_u8(0x0f);
     u8x16 zero_ascii = simde_vdupq_n_u8('0');
