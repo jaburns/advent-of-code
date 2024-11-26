@@ -5,16 +5,21 @@
 
 #include "../../jaburns_c/base/inc.c"
 
+#include "day1.c"
+
 // defined in *.s
-DayResult day1(Arena* arena, Str input);
-DayResult day2(Arena* arena, Str input);
+DayResult day1_asm(Arena* arena, Str input);
+DayResult day2_asm(Arena* arena, Str input);
 
-#define DAY_NUMBER 2
-#define INPUT_TYPE "main"
-#define ITERATIONS 100000
+#define DAY_NUMBER  1
+#define INPUT_TYPE  "main"
+#define LANG_SUFFIX _c
+#define ITERATIONS  100000
 
-#define DayFn(x)  Concatenate(day, x)
-#define DayStr(x) Stringify(x)
+#define DayFn__(x, y, z) x##y##z
+#define DayFn_(x, y)     DayFn__(day, x, y)
+#define DayFn(x)         DayFn_(x, LANG_SUFFIX)
+#define DayStr(x)        Stringify(x)
 
 internal void print_result_part(DayResultPart* part) {
     if (part->is_str) {

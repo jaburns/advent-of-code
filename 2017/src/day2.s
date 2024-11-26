@@ -1,17 +1,13 @@
 .section __TEXT,__text
 
 ; ======================================================================================================================
-; DayResult day2(Arena* arena, Str input);
+; DayResult day2_asm(Arena* arena, Str input);
 ; x0 -> Arena*      arena
 ; x1 -> char*       input.items
 ; x2 -> size_t      input.count
 ; x8 -> DayResult*  result
-.global _day2
-_day2:
-    ; preamble
-        stp x29, x30, [sp, #-16]!
-        mov x29, sp
-
+.global _day2_asm
+_day2_asm:
     ; v1 : ascii tab
     ; v4 : ascii newline
     ; x6 : pointer to end of input string
@@ -165,14 +161,11 @@ _day2:
             cmp  x9, x7
             bne  1b
 
-    ; write result into the returned struct
+    ; write result into the returned struct and return
         str xzr, [x8       ]  ; part[0].is_str
         str x0,  [x8, #0x08]  ; part[0].as_u64
         str xzr, [x8, #0x18]  ; part[1].is_str
         str x13, [x8, #0x20]  ; part[1].as_u64
-
-    ; postamble
-        ldp x29, x30, [sp], #16
         ret
 
 .align 16

@@ -17,14 +17,14 @@ WARNINGS='
 
 if [[ -n "$DEBUG_BUILD" ]]; then
     OPTS='
-        -g 
-        -O0 
-        -DDEBUG=1 
-        -fsanitize=undefined,unsigned-integer-overflow 
+        -g
+        -O0
+        -DDEBUG=1
+        -fsanitize=undefined,unsigned-integer-overflow
         -fno-omit-frame-pointer
     '
 else
-    OPTS='-O3'
+    OPTS='-O3 -g'
 fi
 
 
